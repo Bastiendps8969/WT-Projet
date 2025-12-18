@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mon Profil - Thread</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+	
+	<header class="header-top">
+		<div class="logo">
+			<img src="assets/logo_v9.png" alt="Thread Logo" class="site-logo">
+			<span style="font-size:1.35rem; font-weight:700; color:inherit;">Thread</span>
+		</div>
+
+		<div class="profile-menu-container">
+			<!-- Remplacé le div.profile-icon par une image avatar -->
+			<img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
+			<div class="profile-dropdown" id="profileDropdown">
+				<a href="login.html" id="dropdownLoginLink">🔑 Connexion</a>
+				<a href="register.html" id="dropdownRegisterLink">📝 S'inscrire</a>
+				<a href="profile.html" id="dropdownProfileLink" class="active">👤 Mon Profil</a> 
+				<div class="divider"></div>
+				<a id="logoutBtn" class="logout-link">🚪 Déconnexion</a>
+			</div>
+		</div>
+	</header>
+
+	<nav class="navbar-main">
+		<a href="index.html">Home</a>
+		<a href="tags.html">Tags</a>
+		<a href="create_story.html" id="navCreateLink">Create</a> 
+		<a href="archives.html">Archives</a>
+	</nav>
+
+
+	<div class="app-container">
+		<div class="content-area">
+			
+			<h2 class="profile-title">Profile</h2>
+
+			<div class="profile-item" id="usernameItem">
+				<span class="profile-label">Username</span>
+				<span class="profile-action-arrow">></span>
+			</div>
+
+			<div class="profile-item" id="emailItem">
+				<span class="profile-label">Email</span>
+				<span class="profile-action-arrow">></span>
+			</div>
+			
+			<div class="profile-item" id="passwordItem">
+				<span class="profile-label">Password</span>
+				<span class="profile-action-arrow">></span>
+			</div>
+
+			<div class="profile-item" id="profilePicItem">
+				<span class="profile-label">Profile Pic</span>
+				<span class="profile-action-arrow">></span>
+			</div>
+			
+		</div>
+	</div>
+
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+	<script>
+		
+		// --- LOGIQUE D'AFFICHAGE DU MENU PROFIL ---
+		$('#profileAvatar').on('click', function() {
+			$('#profileDropdown').toggle();
+		});
+		// Cacher le menu si on clique en dehors
+		$(document).on('click', function(e) {
+			if (!$(e.target).closest('.profile-menu-container').length) {
+				$('#profileDropdown').hide();
+			}
+		});
+		// --- FIN LOGIQUE DU MENU PROFIL ---
+		
+		$(document).ready(function() {
+			const $dropdownLoginLink = $('#dropdownLoginLink');
+			const $dropdownRegisterLink = $('#dropdownRegisterLink');
+			const $dropdownProfileLink = $('#dropdownProfileLink');
+			const $navCreateLink = $('#navCreateLink');
+			const $logoutBtn = $('#logoutBtn');
+			
+			// 1. Fonction pour vérifier le statut de la session et mettre à jour le menu Profil
+			function checkAuthStatus() {
+				$.ajax({
+					url: 'check_session.php',
+					type: 'GET',
+					dataType: 'json',
+					success: function(response) {
+						if (response.status === 'connected') {
+							// Mettre à jour l'avatar si fourni
+							if (response.profile_pic) {
+								$('#profileAvatar').attr('src', response.profile_pic);
+							} else {
+								$('#profileAvatar').attr('src', 'assets/ImageParDefaut.png');
+							}
+							// Si connecté, cacher Login/Register et afficher Profile/Logout/Create
+							$dropdownLoginLink.hide();
+							$dropdownRegisterLink.hide();
+							$dropdownProfileLink.show();
+							$logoutBtn.show();
+							$navCreateLink.show(); 
+						} else {
+							// Si déconnecté, rediriger vers la page de connexion
+							alert('Vous devez être connecté pour voir votre profil.');
+							window.location.href = 'login.html'; 
+						}
+					},
+					error: function() {
+						// En cas d'erreur serveur, rediriger
+						window.location.href = 'login.html';
+					}
+				});
+			}
+
+			// 2. Gestion de la Déconnexion 
+			function handleLogout() {
+				if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+					$.ajax({
+						url: 'logout.php',
+						type: 'POST',
+						dataType: 'json',
+						success: function(response) {
+							if (response.success) {
+								window.location.href = 'index.html'; 
+							} else {
+								alert('Erreur lors de la déconnexion.');
+							}
+						}
+					});
+				}
+			}
+			$logoutBtn.on('click', handleLogout);
+
+			// --- GESTION DES CLICS POUR LA MODIFICATION ---
+			
+			// Action sur Username
+			$('#usernameItem').on('click', function() {
+				// Redirection vers la page de modification de Username
+				window.location.href = 'edit_username.html';
+			});
+
+			// Action sur Email
+			$('#emailItem').on('click', function() {
+				// Redirection vers la page de modification d'Email
+				window.location.href = 'edit_email.html';
+			});
+
+			// Action sur Password
+			$('#passwordItem').on('click', function() {
+				// Redirection vers la page de modification du Mot de Passe
+				window.location.href = 'edit_password.html';
+			});
+
+			// Action sur Profile Pic
+			$('#profilePicItem').on('click', function() {
+				// Redirection vers la page de modification de la Photo de Profil
+				window.location.href = 'edit_profile_pic.html';
+			});
+			// ... (le reste du script est inchangé)
+
+			// Lancement de la vérification de session au chargement de la page
+			checkAuthStatus();
+		});
+	</script>
+</body>
+</html>

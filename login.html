@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="login-form">
+        <h2 class="mb-4 text-center">🔑 Connexion</h2>
+        
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="email" class="form-label">Adresse Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Mot de Passe</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+
+            <div id="messageArea" class="mt-4 alert" style="display:none;"></div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">Se Connecter</button>
+            </div>
+
+            <p class="mt-3 text-center">Pas encore de compte ? <a href="register.html">Créer un compte</a></p>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Gérer la soumission du formulaire via AJAX
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const $form = $(this);
+                const $btn = $form.find('button[type="submit"]');
+                const $messageArea = $('#messageArea');
+
+                $btn.prop('disabled', true).text('Vérification...');
+                $messageArea.hide().removeClass('alert-success alert-danger').empty();
+
+                $.ajax({
+                    url: 'login.php', // Cible le WebService PHP
+                    type: 'POST',
+                    data: $form.serialize(), // Sérialise les données du formulaire (email, password)
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $messageArea.text(response.message).addClass('alert-success').show();
+                            
+                            // Rediriger l'utilisateur après un court délai
+                            setTimeout(function() {
+                                // Redirige vers la page des stories par exemple
+                                window.location.href = 'index.html'; 
+                            }, 1000);
+                        } else {
+                            $messageArea.text(response.message).addClass('alert-danger').show();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Erreur AJAX:", xhr.responseText);
+                        $messageArea.text("Erreur de communication avec le serveur.").addClass('alert-danger').show();
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('Se Connecter');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

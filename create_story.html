@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Créer une Story</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+	
+	<header class="header-top">
+		<div class="logo">
+			<img src="assets/logo_v9.png" alt="Thread Logo" class="site-logo">
+			<span style="font-size:1.35rem; font-weight:700; color:inherit;">Thread</span>
+		</div>
+
+		<div class="profile-menu-container">
+			<img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
+			<div class="profile-dropdown" id="profileDropdown">
+				<a href="login.html" id="dropdownLoginLink">🔑 Connexion</a>
+				<a href="register.html" id="dropdownRegisterLink">📝 S'inscrire</a>
+				<a href="profile.html" id="dropdownProfileLink" style="display:none;">👤 Mon Profil</a>
+				<div class="divider"></div>
+				<a id="logoutBtn" class="logout-link" style="display:none;">🚪 Déconnexion</a>
+			</div>
+		</div>
+	</header>
+
+	<nav class="navbar-main">
+		<a href="index.html">Home</a>
+		<a href="tags.html">Tags</a>
+		<a href="create_story.html" id="navCreateLink" class="active">Create</a> 
+		<a href="archives.html">Archives</a>
+	</nav>
+
+
+	<div class="container">
+		<h1 class="mb-4 text-center">✍️ Créer une Nouvelle Story</h1>
+		
+		<form id="createStoryForm" enctype="multipart/form-data">
+			
+			<div class="mb-3 form-group">
+				<label for="title" class="form-label">Titre de la Story</label>
+				<input type="text" class="form-control" id="title" name="title" maxlength="50" required>
+				<div class="form-text">50 caractères maximum.</div>
+			</div>
+
+			<div class="mb-3 form-group">
+				<label for="tags" class="form-label">Tags (Sélectionnez au moins un)</label>
+				<select class="form-select" id="tags" name="tags[]" multiple>
+					<option value="" disabled>Chargement des tags...</option>
+				</select>
+				<div class="form-text">Utilisez CTRL/CMD pour sélectionner plusieurs tags.</div>
+			</div>
+
+			<div class="mb-3 form-group">
+				<label for="content" class="form-label">Contenu de la Story</label>
+				<textarea class="form-control" id="content" name="content" rows="8" maxlength="5000" required></textarea>
+				<div class="form-text">5000 caractères maximum.</div>
+			</div>
+
+			<div class="mb-3 form-group">
+				<label for="picture" class="form-label">Image de la Story (Optionnel)</label>
+				<input class="form-control" type="file" id="picture" name="picture" accept="image/png, image/jpeg, image/gif">
+				<img id="previewImage" src="#" alt="Aperçu de l'image" style="display:none;"/>
+			</div>
+
+			<!-- Ajout : option pour archiver au lieu de publier -->
+			<div class="mb-3 form-group form-check">
+				<input type="checkbox" class="form-check-input" id="isArchive" name="is_archive" value="1">
+				<label class="form-check-label" for="isArchive">Archiver la story (ne pas publier dans le flux)</label>
+				<div class="form-text">Si cochée, la story sera ajoutée aux archives.</div>
+			</div>
+
+			<div id="messageArea" class="mt-4 alert" style="display:none;"></div>
+
+			<div class="d-grid">
+				<button type="submit" class="btn btn-primary btn-lg">🚀 Publier la Story</button>
+			</div>
+		</form>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+	<script>
+		
+		// --- LOGIQUE D'AFFICHAGE DU MENU PROFIL ---
+        $('#profileAvatar').on('click', function() { $('#profileDropdown').toggle(); });
+        // Cacher le menu si on clique en dehors
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.profile-menu-container').length) {
+                $('#profileDropdown').hide();
+            }
+        });
+        // --- FIN LOGIQUE DU MENU PROFIL ---
+        
+        $(document).ready(function() {
+            const $dropdownLoginLink = $('#dropdownLoginLink');
+            const $dropdownRegisterLink = $('#dropdownRegisterLink');
+            const $dropdownProfileLink = $('#dropdownProfileLink');
+            const $navCreateLink = $('#navCreateLink');
+            const $logoutBtn = $('#logoutBtn');
+            
+            // 1. Fonction pour vérifier le statut de la session et mettre à jour le menu Profil
+            function checkAuthStatus() {
+                $.ajax({
+                    url: 'check_session.php',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'connected') {
+                            if (response.profile_pic) {
+                                $('#profileAvatar').attr('src', response.profile_pic);
+                            } else {
+                                $('#profileAvatar').attr('src', 'assets/ImageParDefaut.png');
+                            }
+                            // Connecté
+                            $dropdownLoginLink.hide();
+                            $dropdownRegisterLink.hide();
+                            $dropdownProfileLink.show();
+                            $logoutBtn.show();
+                            $navCreateLink.show(); 
+                        } else {
+                            // Déconnecté - Rediriger si non connecté et sur la page de création
+                            alert('Vous devez être connecté pour créer une Story.');
+                            window.location.href = 'login.html'; 
+                        }
+                    },
+                    error: function() {
+                        // En cas d'erreur durant la vérification, rediriger vers login
+                        window.location.href = 'login.html';
+                    }
+                });
+            }
+
+            // 2. Gestion de la Déconnexion 
+            function handleLogout() {
+                if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                    $.ajax({
+                        url: 'logout.php',
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                window.location.href = 'index.html';
+                            } else {
+                                alert('Erreur lors de la déconnexion.');
+                            }
+                        },
+                        error: function() {
+                            alert('Erreur lors de la déconnexion.');
+                        }
+                    });
+                }
+            }
+            $logoutBtn.on('click', handleLogout);
+
+            // init: si la checkbox d'archive existe, basculer l'état du select tags
+            function updateTagsRequirement() {
+                const isArchiveChecked = $('#isArchive').is(':checked');
+                const $tags = $('#tags');
+                if (isArchiveChecked) {
+                    $tags.prop('required', false).prop('disabled', true);
+                } else {
+                    $tags.prop('disabled', false).prop('required', true);
+                }
+            }
+            // run on load and when toggled
+            $('#isArchive').on('change', updateTagsRequirement);
+            updateTagsRequirement();
+
+            // Fonction pour charger les tags via AJAX
+            function loadTags() {
+                $.ajax({
+                    url: 'get_tags.php',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        const $tagSelect = $('#tags');
+                        $tagSelect.empty(); 
+                        if (response.success && response.tags.length > 0) {
+                            $.each(response.tags, function(i, tag) {
+                                $tagSelect.append($('<option>', {
+                                    value: tag.IdTag,
+                                    text: tag.Title
+                                }));
+                            });
+                        } else {
+                            $tagSelect.append($('<option>', {
+                                value: '',
+                                text: 'Aucun tag disponible',
+                                disabled: true
+                            }));
+                        }
+                        // after loading tags ensure required/disabled state is correct
+                        updateTagsRequirement();
+                    },
+                    error: function(xhr, status, error) {
+                        const $tagSelect = $('#tags');
+                        $tagSelect.empty();
+                        $tagSelect.append($('<option>', {
+                            value: '',
+                            text: 'Erreur de chargement des tags',
+                            disabled: true
+                        }));
+                        console.error("Erreur de chargement des tags:", error);
+                        updateTagsRequirement();
+                    }
+                });
+            }
+
+            // Afficher l'aperçu de l'image lors de la sélection
+            $('#picture').change(function() {
+                const file = this.files[0];
+                const $preview = $('#previewImage');
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $preview.attr('src', e.target.result).show();
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    $preview.hide().attr('src', '#');
+                }
+            });
+
+            // Gérer la soumission du formulaire via AJAX
+            $('#createStoryForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const $form = $(this);
+                const $btn = $form.find('button[type="submit"]');
+                const $messageArea = $('#messageArea');
+
+                $btn.prop('disabled', true).text('Publication en cours...');
+                $messageArea.hide().removeClass('alert-success alert-danger').empty();
+
+                // Si on archive, on n'exige PAS les tags côté client
+                const isArchive = $('#isArchive').is(':checked');
+                if (!isArchive) {
+                    const tagsVal = $('#tags').val();
+                    if (!tagsVal || tagsVal.length === 0) {
+                        displayMessage('Veuillez sélectionner au moins un tag.', 'alert-danger');
+                        $btn.prop('disabled', false).text('🚀 Publier la Story');
+                        return;
+                    }
+                }
+
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: 'add_story.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false, 
+                    contentType: false, 
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            if (isArchive) {
+                                displayMessage('Story archivée! ID: ' + (response.archive_id || response.story_id || ''), 'alert-success');
+                                setTimeout(function(){ window.location.href = 'archives.html'; }, 700);
+                            } else {
+                                displayMessage('Story publiée! ID: ' + (response.story_id || ''), 'alert-success');
+                            }
+                            $form[0].reset(); 
+                            $('#previewImage').hide().attr('src', '#');
+                            loadTags(); 
+                        } else {
+                            displayMessage('Erreur: ' + (response.message || 'Problème inconnu.'), 'alert-danger');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Erreur AJAX:", xhr.responseText);
+                        displayMessage("Erreur de communication avec le serveur. Vérifiez les logs.", 'alert-danger');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('🚀 Publier la Story');
+                    }
+                });
+            });
+
+            // Fonction utilitaire pour afficher les messages
+            function displayMessage(message, type) {
+                const $messageArea = $('#messageArea');
+                $messageArea.removeClass('alert-success alert-danger').addClass(type).text(message).show();
+            }
+
+            // Lancement des fonctions au chargement de la page
+            checkAuthStatus();
+            loadTags();
+        });
+    </script>
+</body>
+</html>

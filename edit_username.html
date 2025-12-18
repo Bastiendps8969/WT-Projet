@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Modifier Username - Thread</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    
+    <header class="header-top">
+        <div class="logo">
+			<img src="assets/logo_v9.png" alt="Thread Logo" class="site-logo">
+			<span style="font-size:1.35rem; font-weight:700; color:inherit;">Thread</span>
+		</div>
+        <div class="profile-menu-container">
+            <img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
+             <div class="profile-dropdown" id="profileDropdown">
+                <a href="login.html" id="dropdownLoginLink" style="display:none;">🔑 Connexion</a>
+                <a href="register.html" id="dropdownRegisterLink" style="display:none;">📝 S'inscrire</a>
+                <a href="profile.html" id="dropdownProfileLink">👤 Mon Profil</a> 
+                <div class="divider"></div>
+                <a id="logoutBtn" class="logout-link">🚪 Déconnexion</a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navbar-main">
+        <a href="index.html">Home</a>
+        <a href="tags.html">Tags</a>
+        <a href="create_story.html" id="navCreateLink">Create</a> 
+        <a href="archives.html">Archives</a>
+    </nav>
+
+    <div class="app-container">
+        <div class="modification-container">
+            <div class="form-card">
+                <h2>Change Username</h2>
+                <form id="usernameForm">
+                    <label for="new_username">New Username</label>
+                    <input type="text" id="new_username" name="new_username" required placeholder="Nouveau nom d'utilisateur">
+                    
+                    <button type="submit">Validate Change</button>
+                    <p id="message" class="message"></p>
+                    <a href="profile.html" style="display:block; margin-top:15px; color:#333;">Retour au Profil</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        
+        // --- LOGIQUE D'AFFICHAGE DU MENU PROFIL ---
+        $('#profileAvatar').on('click', function() { $('#profileDropdown').toggle(); });
+         // Cacher le menu si on clique en dehors
+         $(document).on('click', function(e) {
+             if (!$(e.target).closest('.profile-menu-container').length) {
+                 $('#profileDropdown').hide();
+             }
+         });
+        // --- FIN LOGIQUE DU MENU PROFIL ---
+
+        // Gestion de la Déconnexion 
+        $('#logoutBtn').on('click', function() { 
+             if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                 // Remplacez ceci par un appel AJAX réel à logout.php si nécessaire
+                 window.location.href = 'login.html'; 
+             }
+        });
+        
+        // Gestion du formulaire de modification d'Username
+        $('#usernameForm').on('submit', function(e) {
+            e.preventDefault();
+            const newUsername = $('#new_username').val();
+            const $message = $('#message');
+            
+            // Indication de l'état de la requête
+            $message.text('Modification en cours...');
+            
+            $.ajax({
+                url: 'update_username.php', // Endpoint qui doit exister sur le serveur
+                type: 'POST',
+                data: { new_username: newUsername },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        $message.css('color', 'green').text('Username mis à jour avec succès !');
+                        // Redirection après un court délai
+                        setTimeout(() => {
+                           window.location.href = 'profile.html';
+                        }, 1500);
+                    } else {
+                        // Affiche le message d'erreur du serveur
+                        $message.css('color', 'red').text(response.message || 'Erreur lors de la mise à jour.');
+                    }
+                },
+                error: function(xhr) {
+                    // C'est ici que votre erreur 401 a été traitée
+                    if (xhr.status === 401) {
+                         $message.css('color', 'red').text('Session expirée ou non autorisée. Redirection...');
+                         setTimeout(() => {
+                            window.location.href = 'login.html'; 
+                         }, 1500);
+                    } else {
+                        $message.css('color', 'red').text('Erreur de connexion au serveur.');
+                    }
+                }
+            });
+        });
+
+        // Logique de vérification de session (essentielle pour protéger cette page)
+        $(document).ready(function() {
+            $.ajax({
+                url: 'check_session.php', // Endpoint pour vérifier si la session est active
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    // Si le statut renvoyé n'est pas 'connected', on redirige
+                    if (response.status !== 'connected') {
+                     alert('Vous devez être connecté pour modifier votre profil.');
+                     window.location.href = 'login.html'; 
+                 } else {
+                    if (response.profile_pic) {
+                        $('#profileAvatar').attr('src', response.profile_pic);
+                    } else {
+                        $('#profileAvatar').attr('src', 'assets/ImageParDefaut.png');
+                    }
+                 }
+                },
+                error: function() {
+                    // Si le serveur ne répond pas, on redirige vers la connexion
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

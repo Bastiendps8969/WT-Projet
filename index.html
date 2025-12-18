@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Fil d'Actualité - Stories App</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<style>
+/* Ajout pour les commentaires longs */
+.comment {
+    word-break: break-word;
+    white-space: pre-line;
+    max-height: 120px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.vote-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.vote-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1.25em;
+    padding: 0 4px;
+    color: #888;
+    /* Correction : assure que le bouton est bien interactif */
+    pointer-events: auto;
+}
+.vote-btn[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.vote-btn.active-up { color: #198754; font-weight: bold; }
+.vote-btn.active-down { color: #dc3545; font-weight: bold; }
+.vote-score { font-weight: bold; min-width: 32px; text-align: center; }
+
+.comment-vote-section {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+}
+.comment-vote-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1em;
+    color: #888;
+    padding: 0 2px;
+    pointer-events: auto;
+}
+.comment-vote-btn.active-up { color: #198754; font-weight: bold; }
+.comment-vote-btn.active-down { color: #dc3545; font-weight: bold; }
+.comment-vote-btn[disabled] { opacity: 0.5; pointer-events: none; }
+.comment-vote-count-up { color: #198754; font-weight: bold; }
+.comment-vote-count-down { color: #dc3545; font-weight: bold; }
+</style>
+</head>
+<body>
+    
+    <header class="header-top">
+        <div class="logo">
+            <!-- remplace l'emoji par votre logo -->
+            <img src="assets/logo_v9.png" alt="Thread Logo" class="site-logo">
+            <span style="font-size:1.35rem; font-weight:700; color:inherit;">Thread</span>
+        </div>
+
+        <div class="profile-menu-container">
+            <img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
+            <div class="profile-dropdown" id="profileDropdown">
+                <a href="login.html" id="dropdownLoginLink">🔑 Connexion</a>
+                <a href="register.html" id="dropdownRegisterLink">📝 S'inscrire</a>
+                <a href="profile.html" id="dropdownProfileLink" style="display:none;">👤 Mon Profil</a>
+                <div class="divider"></div>
+                <a id="logoutBtn" class="logout-link" style="display:none;">🚪 Déconnexion</a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navbar-main">
+        <a href="index.html" class="active">Home</a>
+        <a href="tags.html">Tags</a>
+        <a href="create_story.html" id="navCreateLink">Create</a>
+        <a href="archives.html">Archives</a>
+    </nav>
+
+
+    <div class="app-container">
+        <div class="content-area container-fluid">
+            <div class="row">
+                
+                <div class="col-12">
+                    <h1 class="mb-4 mt-3 text-primary text-center">Fil d'actualité Story 📖</h1>
+                    <div id="story_feed_container">
+                        <p id="loading_status" class="text-center text-muted">Chargement des stories...</p>
+                    </div>
+                </div>
+                
+                </div>
+        </div>
+    </div>
+
+
+    <!-- Modal: Edit Story -->
+<div class="modal fade" id="editStoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="editStoryForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier la Story</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit_story_id" name="story_id">
+          <div class="mb-3">
+            <label for="edit_title" class="form-label">Titre</label>
+            <input type="text" id="edit_title" name="title" class="form-control" required maxlength="100">
+          </div>
+          <div class="mb-3">
+            <label for="edit_content" class="form-label">Contenu</label>
+            <textarea id="edit_content" name="content" rows="8" class="form-control" required></textarea>
+          </div>
+          <div id="editMessage" class="mt-2"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const TRUNCATE_LENGTH = 250; 
+        
+        // --- LOGIQUE D'AFFICHAGE DU MENU PROFIL ---
+        $('#profileAvatar').on('click', function() {
+            $('#profileDropdown').toggle();
+        });
+        // Cacher le menu si on clique en dehors
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.profile-menu-container').length) {
+                $('#profileDropdown').hide();
+            }
+        });
+        // --- FIN LOGIQUE DU MENU PROFIL ---
+        
+        $(document).ready(function() {
+            const $dropdownLoginLink = $('#dropdownLoginLink');
+            const $dropdownRegisterLink = $('#dropdownRegisterLink');
+            const $dropdownProfileLink = $('#dropdownProfileLink');
+            const $navCreateLink = $('#navCreateLink');
+            const $logoutBtn = $('#logoutBtn');
+            const $feedContainer = $('#story_feed_container');
+
+            // 1. Fonction pour vérifier le statut de la session et mettre à jour le menu Profil
+            function checkAuthStatus() {
+                $.ajax({
+                    url: 'check_session.php',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'connected') {
+                            // Mettre à jour l'avatar si fourni
+                            if (response.profile_pic) {
+                                $('#profileAvatar').attr('src', response.profile_pic);
+                            } else {
+                                $('#profileAvatar').attr('src', 'assets/ImageParDefaut.png');
+                            }
+                            $dropdownLoginLink.hide();
+                            $dropdownRegisterLink.hide();
+                            $dropdownProfileLink.show();
+                            $logoutBtn.show();
+                            $navCreateLink.show(); // Afficher le lien "Create"
+                        } else {
+                            $dropdownLoginLink.show();
+                            $dropdownRegisterLink.show();
+                            $dropdownProfileLink.hide();
+                            $logoutBtn.hide();
+                            $navCreateLink.hide(); // Cacher le lien "Create"
+                        }
+                    }
+                });
+            }
+
+            // 2. Gestion de la Déconnexion 
+            function handleLogout() {
+                if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                    $.ajax({
+                        url: 'logout.php',
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                // Redirection forcée après déconnexion pour réinitialiser l'état
+                                window.location.href = 'index.html';
+                            } else {
+                                alert('Erreur lors de la déconnexion.');
+                            }
+                        }
+                    });
+                }
+            }
+            $logoutBtn.on('click', handleLogout);
+
+            // 3. Fonction pour récupérer et afficher les Stories
+            function fetchStories() {
+                $('#loading_status').text('Chargement des stories...');
+
+                fetch('get_stories.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.stories.length > 0) {
+                            displayStories(data.stories);
+                        } else {
+                            $feedContainer.html('<p class="text-center">Aucune story n\'est disponible pour le moment.</p>');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de la récupération des stories:', error);
+                        $feedContainer.html('<p class="text-center" style="color: red;">Erreur lors du chargement du fil d\'actualité.</p>');
+                    });
+            }
+
+            // 4. Fonction pour rendre les stories en HTML
+            function displayStories(stories) {
+                let storiesHtml = '';
+
+                stories.forEach(story => {
+                    const tagsList = 
+                        (function(){
+                            // Accepte soit un tableau, soit une chaîne séparée par |||
+                            let arr = [];
+                            if (Array.isArray(story.Tags)) arr = story.Tags;
+                            else if (typeof story.Tags === 'string' && story.Tags.length) arr = story.Tags.split('|||');
+                            return arr.map(tag => `<span class="badge bg-warning text-dark">${tag}</span>`).join(' ');
+                        })();
+                        
+                    const fullContent = story.Content || ''; 
+                    const isLongStory = fullContent.length > TRUNCATE_LENGTH;
+                    const truncatedContent = isLongStory ? fullContent.substring(0, TRUNCATE_LENGTH) : fullContent;
+                    
+                    storiesHtml += `
+                        <div class="story-item" data-story-id="${story.IdStory}">
+                            ${voteSectionHtml(story)}
+
+                            <div class="tags-section">
+                                ${tagsList}
+                            </div>
+
+                            <div class="mb-3">
+                                <h3 class="text-primary">${story.StoryTitle}</h3>
+                            </div>
+                            
+                            <p class="text-muted mb-3">Publié par <strong>${story.Username}</strong></p>
+                            
+                            ${story.Picture ? `<img src="${story.Picture}" alt="Image de la story" class="img-fluid rounded mb-3">` : ''}
+                            
+                            <div class="story-content-box">
+                                <p class="story-content-truncated">${truncatedContent}${isLongStory ? '...' : ''}</p>
+                            
+                                <p class="story-content-full" style="display:none;">${fullContent}</p>
+                            </div>
+                            
+                            <!-- stocker data/title/content pour édition -->
+                            <input type="hidden" class="story-title-data" value="${story.StoryTitle}">
+                            <textarea class="story-content-data" style="display:none;">${fullContent}</textarea>
+                            <div class="story-actions">
+                                ${story.can_edit ? `<button class="edit-story-btn" data-story-id="${story.IdStory}" title="Éditer">🖊️</button>` : ''}
+                                ${story.can_delete ? `<button class="delete-story-btn" data-story-id="${story.IdStory}" title="Supprimer">🗑️</button>` : ''}
+                                ${isLongStory ? `<button class="btn btn-sm btn-outline-secondary read-more-btn" data-story-id="${story.IdStory}">Lire la suite</button>` : ''}
+                            </div>
+                            
+                            <span class="story-date">Publié le ${new Date(story.CreationDate).toLocaleDateString()}</span>
+                            ${commentBlockHtml(story.IdStory)}
+                        </div>
+                    `;
+                });
+
+                $('#story_feed_container').html(storiesHtml);
+
+                // Charger les commentaires pour chaque story affichée
+                $('.story-item').each(function() {
+                    const storyId = $(this).data('story-id');
+                    const $commentsSection = $(this).find('.comments-section');
+                    loadComments(storyId, $commentsSection.find('.comments-list'));
+                });
+            }
+            
+            // Ajout : fonction pour générer la section vote
+            function voteSectionHtml(story) {
+                return `
+                    <div class="vote-section" data-story-id="${story.IdStory}">
+                        <button type="button" class="vote-btn vote-up ${story.user_vote==='up' ? 'active-up' : ''}" title="Upvote">👍</button>
+                        <span class="text-success" style="font-weight:bold;">${story.upvotes}</span>
+                        <button type="button" class="vote-btn vote-down ${story.user_vote==='down' ? 'active-down' : ''}" title="Downvote">👎</button>
+                        <span class="text-danger" style="font-weight:bold;">${story.downvotes}</span>
+                    </div>
+                `;
+            }
+
+            // 5. Gestion de l'événement "Lire la suite"
+            $('#story_feed_container').on('click', '.read-more-btn', function() {
+                const $btn = $(this);
+                const $item = $btn.closest('.story-item');
+                const $truncated = $item.find('.story-content-truncated');
+                const $full = $item.find('.story-content-full');
+                
+                if ($full.is(":hidden")) {
+                    $truncated.hide();
+                    $full.show();
+                    $btn.text('Réduire');
+                } else {
+                    $truncated.show();
+                    $full.hide();
+                    $btn.text('Lire la suite');
+                }
+            });
+            
+            // Gestion du vote (upvote/downvote)
+            $('#story_feed_container').off('click', '.vote-up, .vote-down'); // retire tout ancien handler
+            $('#story_feed_container').on('click', '.vote-up, .vote-down', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const $section = $btn.closest('.vote-section');
+                const storyId = $section.data('story-id');
+                let voteType;
+                if ($btn.hasClass('vote-up')) {
+                    voteType = $btn.hasClass('active-up') ? 'none' : 'up';
+                } else if ($btn.hasClass('vote-down')) {
+                    voteType = $btn.hasClass('active-down') ? 'none' : 'down';
+                }
+
+                $section.find('.vote-btn').prop('disabled', true);
+
+                $.ajax({
+                    url: 'story_vote.php',
+                    type: 'POST',
+                    data: { story_id: storyId, vote: voteType },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            $section.find('.vote-up').toggleClass('active-up', resp.user_vote === 'up');
+                            $section.find('.vote-down').toggleClass('active-down', resp.user_vote === 'down');
+                            $section.find('.text-success').text(resp.upvotes);
+                            $section.find('.text-danger').text(resp.downvotes);
+                        } else {
+                            alert(resp.message || 'Erreur lors du vote.');
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 401) {
+                            alert('Vous devez être connecté pour voter.');
+                        } else {
+                            alert('Erreur serveur lors du vote.');
+                        }
+                    },
+                    complete: function() {
+                        $section.find('.vote-btn').prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Gestion de la suppression (délégué)
+            $('#story_feed_container').on('click', '.delete-story-btn', function() {
+                const storyId = $(this).data('story-id');
+                if (!confirm('Confirmer la suppression de cette story ?')) return;
+                const $btn = $(this);
+                $btn.prop('disabled', true).text('Suppression...');
+                $.ajax({
+                    url: 'delete_story.php',
+                    type: 'POST',
+                    data: { story_id: storyId },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            $btn.closest('.story-item').slideUp(200, function(){ $(this).remove(); });
+                        } else {
+                            alert(resp.message || 'Erreur lors de la suppression.');
+                            $btn.prop('disabled', false).text('Supprimer');
+                        }
+                    },
+                    error: function() {
+                        alert('Erreur serveur lors de la suppression.');
+                        $btn.prop('disabled', false).text('Supprimer');
+                    }
+                });
+            });
+            
+            // Ouvrir modal d'édition
+            $(document).on('click', '.edit-story-btn', function() {
+                const $card = $(this).closest('.story-item');
+                const id = $(this).data('story-id');
+                const title = $card.find('.story-title-data').val() || $card.find('h3').text();
+                const content = $card.find('.story-content-data').text() || $card.find('.story-content-full').text();
+                $('#edit_story_id').val(id);
+                $('#edit_title').val(title);
+                $('#edit_content').val(content);
+                $('#editMessage').empty();
+                var modal = new bootstrap.Modal(document.getElementById('editStoryModal'));
+                modal.show();
+            });
+
+            // Soumettre modification
+            $('#editStoryForm').on('submit', function(e){
+                e.preventDefault();
+                const $form = $(this);
+                const $btn = $form.find('button[type="submit"]');
+                const data = $form.serialize();
+                $btn.prop('disabled', true).text('Enregistrement...');
+                $('#editMessage').removeClass().text('');
+                $.ajax({
+                    url: 'update_story.php',
+                    type: 'POST',
+                    data: data,
+                    dataType: 'json',
+                    success: function(resp){
+                        if (resp.success) {
+                            // fermer modal et recharger les stories
+                            bootstrap.Modal.getInstance(document.getElementById('editStoryModal')).hide();
+                            // recharge la liste pour simplicité
+                            fetchStories();
+                        } else {
+                            $('#editMessage').addClass('text-danger').text(resp.message || 'Erreur lors de la mise à jour.');
+                        }
+                    },
+                    error: function(xhr){
+                        $('#editMessage').addClass('text-danger').text('Erreur serveur.');
+                    },
+                    complete: function(){
+                        $btn.prop('disabled', false).text('Enregistrer');
+                    }
+                });
+            });
+            
+            // Ajout : fonction pour charger les commentaires d'une story
+            function loadComments(storyId, $commentsContainer) {
+                $.ajax({
+                    url: 'get_comments.php',
+                    type: 'GET',
+                    data: { story_id: storyId },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success && resp.comments.length > 0) {
+                            let html = '';
+                            resp.comments.forEach(function(c) {
+                                html += `<div class="comment mb-1" data-comment-id="${c.IdComment}">
+                                    <strong>${c.Username}</strong> : <span>${$('<div>').text(c.Content).html()}</span>
+                                    ${commentVoteSectionHtml(c)}
+                                    <span class="text-muted" style="font-size:0.85em;">${c.CreationDate}</span>
+                                    ${c.can_delete ? `<button class="delete-comment-btn btn btn-link btn-sm text-danger p-0 ms-2" title="Supprimer" style="font-size:0.95em;">🗑️</button>` : ''}
+                                </div>`;
+                            });
+                            $commentsContainer.html(html);
+                        } else {
+                            $commentsContainer.html('<div class="text-muted">Aucun commentaire.</div>');
+                        }
+                    },
+                    error: function() {
+                        $commentsContainer.html('<div class="text-danger">Erreur chargement commentaires.</div>');
+                    }
+                });
+            }
+
+            // Ajout : fonction pour afficher le bloc commentaire sous chaque story
+            function commentBlockHtml(storyId) {
+                return `
+                    <div class="comments-section" data-story-id="${storyId}">
+                        <div class="comments-list mb-2" style="min-height:24px;"></div>
+                        <form class="add-comment-form d-flex gap-2" autocomplete="off">
+                            <input type="text" name="content" class="form-control form-control-sm" placeholder="Ajouter un commentaire..." maxlength="500" required>
+                            <button type="submit" class="btn btn-sm btn-primary">Envoyer</button>
+                        </form>
+                        <div class="comment-message mt-1" style="font-size:0.95em;"></div>
+                    </div>
+                `;
+            }
+
+            // Ajout : fonction pour générer la section vote d'un commentaire
+            function commentVoteSectionHtml(comment) {
+                return `
+                    <span class="comment-vote-section" data-comment-id="${comment.IdComment}">
+                        <button type="button" class="comment-vote-btn comment-vote-up ${comment.user_vote==='up' ? 'active-up' : ''}" title="Upvote">👍</button>
+                        <span class="comment-vote-count-up">${comment.upvotes || 0}</span>
+                        <button type="button" class="comment-vote-btn comment-vote-down ${comment.user_vote==='down' ? 'active-down' : ''}" title="Downvote">👎</button>
+                        <span class="comment-vote-count-down">${comment.downvotes || 0}</span>
+                    </span>
+                `;
+            }
+
+            // Gestion du vote sur commentaire (upvote/downvote)
+            $('#story_feed_container').off('click', '.comment-vote-up, .comment-vote-down');
+            $('#story_feed_container').on('click', '.comment-vote-up, .comment-vote-down', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const $section = $btn.closest('.comment-vote-section');
+                const commentId = $section.data('comment-id');
+                let voteType;
+                if ($btn.hasClass('comment-vote-up')) {
+                    voteType = $btn.hasClass('active-up') ? 'none' : 'up';
+                } else if ($btn.hasClass('comment-vote-down')) {
+                    voteType = $btn.hasClass('active-down') ? 'none' : 'down';
+                }
+
+                $section.find('.comment-vote-btn').prop('disabled', true);
+
+                $.ajax({
+                    url: 'comment_vote.php',
+                    type: 'POST',
+                    data: { comment_id: commentId, vote: voteType },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            $section.find('.comment-vote-up').toggleClass('active-up', resp.user_vote === 'up');
+                            $section.find('.comment-vote-down').toggleClass('active-down', resp.user_vote === 'down');
+                            $section.find('.comment-vote-count-up').text(resp.upvotes);
+                            $section.find('.comment-vote-count-down').text(resp.downvotes);
+                        } else {
+                            alert(resp.message || 'Erreur lors du vote.');
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 401) {
+                            alert('Vous devez être connecté pour voter.');
+                        } else {
+                            alert('Erreur serveur lors du vote.');
+                        }
+                    },
+                    complete: function() {
+                        $section.find('.comment-vote-btn').prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Gestion de l'ajout de commentaire (délégué)
+            $('#story_feed_container').on('submit', '.add-comment-form', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const $section = $form.closest('.comments-section');
+                const $msg = $section.find('.comment-message');
+                const $input = $form.find('input[name="content"]');
+                const content = $input.val();
+                const storyId = $section.data('story-id');
+                $msg.removeClass('text-danger text-success').text('');
+                $form.find('button').prop('disabled', true);
+
+                $.ajax({
+                    url: 'add_comment.php',
+                    type: 'POST',
+                    data: { story_id: storyId, content: content },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            $msg.addClass('text-success').text('Commentaire ajouté.');
+                            $input.val('');
+                            loadComments(storyId, $section.find('.comments-list'));
+                        } else {
+                            $msg.addClass('text-danger').text(resp.message || 'Erreur.');
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 401) {
+                            $msg.addClass('text-danger').text('Vous devez être connecté pour commenter.');
+                        } else {
+                            $msg.addClass('text-danger').text('Erreur serveur.');
+                        }
+                    },
+                    complete: function() {
+                        $form.find('button').prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Gestion de la suppression de commentaire (délégué)
+            $('#story_feed_container').on('click', '.delete-comment-btn', function(e) {
+                e.preventDefault();
+                const $commentDiv = $(this).closest('.comment');
+                const commentId = $commentDiv.data('comment-id');
+                if (!confirm('Supprimer ce commentaire ?')) return;
+                $(this).prop('disabled', true);
+                $.ajax({
+                    url: 'delete_comment.php',
+                    type: 'POST',
+                    data: { comment_id: commentId },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            $commentDiv.slideUp(150, function(){ $(this).remove(); });
+                        } else {
+                            alert(resp.message || 'Erreur lors de la suppression du commentaire.');
+                            $(this).prop('disabled', false);
+                        }
+                    },
+                    error: function() {
+                        alert('Erreur serveur lors de la suppression du commentaire.');
+                        $(this).prop('disabled', false);
+                    }
+                });
+            });
+
+            // Lancement des fonctions au chargement de la page
+            checkAuthStatus();
+            fetchStories();
+        });
+    </script>
+</body>
+</html>

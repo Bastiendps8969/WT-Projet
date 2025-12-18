@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Liste des Stories</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <header class="header-top">
+        <div class="logo"><img src="assets/logo_v9.png" alt="Thread Logo" class="site-logo"><span style="font-size:1.35rem; font-weight:700; color:inherit;">Thread</span></div>
+        <div class="profile-menu-container">
+            <img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
+            <div class="profile-dropdown" id="profileDropdown">
+                <a href="login.html" id="dropdownLoginLink">🔑 Connexion</a>
+                <a href="register.html" id="dropdownRegisterLink">📝 S'inscrire</a>
+                <div class="divider"></div>
+                <a id="logoutBtn" class="logout-link">🚪 Déconnexion</a>
+            </div>
+        </div>
+    </header>
+    <nav class="navbar-main">
+        <a href="index.html">Home</a>
+        <a href="tags.html">Tags</a>
+        <a href="create_story.html">Create</a>
+        <a href="archives.html">Archives</a>
+    </nav>
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">📰 Flux des Stories</h1>
+        
+        <div id="storiesContainer" class="row">
+            <p id="loadingMessage" class="text-center text-muted">Chargement des stories en cours...</p>
+        </div>
+    </div>
+
+    <!-- Modal pour l'édition de la story -->
+    <div class="modal fade" id="editStoryModal" tabindex="-1" aria-labelledby="editStoryModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editStoryModalLabel">Éditer la Story</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editStoryForm">
+              <input type="hidden" id="editStoryId" name="story_id">
+              <div class="mb-3">
+                <label for="editStoryTitle" class="form-label">Titre de la Story</label>
+                <input type="text" class="form-control" id="editStoryTitle" name="story_title" required>
+              </div>
+              <div class="mb-3">
+                <label for="editStoryContent" class="form-label">Contenu de la Story</label>
+                <textarea class="form-control" id="editStoryContent" name="story_content" rows="3" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="editStoryTags" class="form-label">Tags (séparés par des virgules)</label>
+                <input type="text" class="form-control" id="editStoryTags" name="story_tags">
+              </div>
+              <div class="mb-3">
+                <label for="editStoryPicture" class="form-label">Image de la Story (URL)</label>
+                <input type="text" class="form-control" id="editStoryPicture" name="story_picture">
+              </div>
+              <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            const $storiesContainer = $('#storiesContainer');
+            const $loadingMessage = $('#loadingMessage');
+
+            // Fonction pour charger et afficher les stories via AJAX
+            function loadStories() {
+                $loadingMessage.show(); // Afficher le message de chargement
+
+                $.ajax({
+                    url: 'get_stories.php',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        $loadingMessage.hide(); // Cacher le message de chargement
+                        $storiesContainer.empty(); // Vider le conteneur
+
+                        if (response.success && response.stories.length > 0) {
+                            // Parcourir toutes les stories et construire le HTML
+                            $.each(response.stories, function(i, story) {
+                                // 1. Formater la date
+                                const date = new Date(story.CreationDate);
+                                const dateStr = date.toLocaleDateString('fr-FR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                });
+
+                                // 2. Créer les badges de tags
+                                let tagsHtml = '';
+                                $.each(story.Tags, function(j, tagTitle) {
+                                    if (tagTitle) {
+                                        tagsHtml += `<span class="badge bg-secondary tag-badge">${tagTitle}</span>`;
+                                    }
+                                });
+
+                                // 3. Construction de la carte de la story (Bootstrap Card)
+                                const storyHtml = `
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card story-card">
+                                            ${story.Picture ? `<img src="${story.Picture}" class="card-img-top story-image" alt="Image de la story">` : ''}
+                                            <div class="card-body">
+                                                <h5 class="card-title">${story.StoryTitle}</h5>
+                                                <p class="card-text">${story.Content.substring(0, 150)}...</p>
+                                                <div class="mb-2">
+                                                    ${tagsHtml}
+                                                </div>
+                                                <p class="card-text">
+                                                    <small class="text-muted">
+                                                        Publié par <strong>${story.Username}</strong> le ${dateStr}
+                                                    </small>
+                                                </p>
+                                                <input type="hidden" class="story-title-data" value="${story.StoryTitle}">
+                                                <textarea class="story-content-data" style="display:none;">${story.Content}</textarea>
+                                                <div class="story-actions">
+                                                    ${story.can_edit ? `<button class="edit-story-btn" data-story-id="${story.IdStory}" title="Éditer">🖊️</button>` : ''}
+                                                    ${story.can_delete ? `<button class="delete-story-btn" data-story-id="${story.IdStory}" title="Supprimer">🗑️</button>` : ''}
+                                                    <a href="#" class="btn btn-sm btn-outline-primary">Lire la suite</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+
+                                $storiesContainer.append(storyHtml);
+                            });
+                        } else {
+                            $storiesContainer.html('<p class="text-center text-muted">Aucune story n\'est disponible pour le moment.</p>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $loadingMessage.hide();
+                        console.error("Erreur AJAX:", xhr.responseText);
+                        $storiesContainer.html('<p class="text-center text-danger">Erreur de chargement des stories. Veuillez vérifier le serveur.</p>');
+                    }
+                });
+            }
+
+            // Chargement initial des stories
+            loadStories();
+
+            // avatar menu
+            $('#profileAvatar').on('click', function(){ $('#profileDropdown').toggle(); });
+            $(document).on('click', function(e){ if(!$(e.target).closest('.profile-menu-container').length) $('#profileDropdown').hide(); });
+
+            $(document).ready(function(){
+                $.ajax({
+                    url: 'check_session.php',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(resp){
+                        if (resp.status === 'connected') {
+                            if (resp.profile_pic) $('#profileAvatar').attr('src', resp.profile_pic);
+                            else $('#profileAvatar').attr('src', 'assets/ImageParDefaut.png');
+                            $('#dropdownLoginLink, #dropdownRegisterLink').hide();
+                        } else {
+                             $('#dropdownLoginLink, #dropdownRegisterLink').show();
+                         }
+                    }
+                });
+            });
+
+            // suppression dans list_stories (délégué)
+            $('#storiesContainer').on('click', '.delete-story-btn', function(e){
+                e.preventDefault();
+                const $btn = $(this);
+                const storyId = $btn.data('story-id');
+                if (!confirm('Confirmer la suppression de cette story ?')) return;
+                $btn.prop('disabled', true).text('Suppression...');
+                $.ajax({
+                    url: 'delete_story.php',
+                    type: 'POST',
+                    data: { story_id: storyId },
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            // retire la carte parent
+                            $btn.closest('.col-md-6, .col-lg-4').slideUp(200, function(){ $(this).remove(); });
+                        } else {
+                            alert(resp.message || 'Erreur lors de la suppression.');
+                            $btn.prop('disabled', false).text('Supprimer');
+                        }
+                    },
+                    error: function() {
+                        alert('Erreur serveur lors de la suppression.');
+                        $btn.prop('disabled', false).text('Supprimer');
+                    }
+                });
+            });
+
+            // Édition de la story (ouvrir le modal avec les données)
+            $('#storiesContainer').on('click', '.edit-story-btn', function(e){
+                e.preventDefault();
+                const $btn = $(this);
+                const storyId = $btn.data('story-id');
+
+                // Remplir le formulaire du modal avec les données de la story
+                $('#editStoryId').val(storyId);
+                $('#editStoryTitle').val($btn.closest('.card-body').find('.story-title-data').val());
+                $('#editStoryContent').val($btn.closest('.card-body').find('.story-content-data').val());
+                $('#editStoryTags').val(''); // À remplir si nécessaire
+                $('#editStoryPicture').val(''); // À remplir si nécessaire
+
+                // Ouvrir le modal
+                $('#editStoryModal').modal('show');
+            });
+
+            // Soumission du formulaire d'édition
+            $('#editStoryForm').on('submit', function(e){
+                e.preventDefault();
+                const formData = $(this).serialize();
+
+                $.ajax({
+                    url: 'edit_story.php',
+                    type: 'POST',
+                    data: formData,
+                    dataType: 'json',
+                    success: function(resp) {
+                        if (resp.success) {
+                            // Mettre à jour la story dans la liste sans recharger
+                            const updatedStoryHtml = `
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card story-card">
+                                        ${resp.story.Picture ? `<img src="${resp.story.Picture}" class="card-img-top story-image" alt="Image de la story">` : ''}
+                                        <div class="card-body">
+                                            <h5 class="card-title">${resp.story.StoryTitle}</h5>
+                                            <p class="card-text">${resp.story.Content.substring(0, 150)}...</p>
+                                            <div class="mb-2">
+                                                ${resp.story.Tags.map(tag => `<span class="badge bg-secondary tag-badge">${tag}</span>`).join('')}
+                                            </div>
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    Publié par <strong>${resp.story.Username}</strong> le ${new Date(resp.story.CreationDate).toLocaleDateString('fr-FR')}
+                                                </small>
+                                            </p>
+                                            <input type="hidden" class="story-title-data" value="${resp.story.StoryTitle}">
+                                            <textarea class="story-content-data" style="display:none;">${resp.story.Content}</textarea>
+                                            <div class="story-actions">
+                                                ${resp.story.can_edit ? `<button class="edit-story-btn" data-story-id="${resp.story.IdStory}" title="Éditer">🖊️</button>` : ''}
+                                                ${resp.story.can_delete ? `<button class="delete-story-btn" data-story-id="${resp.story.IdStory}" title="Supprimer">🗑️</button>` : ''}
+                                                <a href="#" class="btn btn-sm btn-outline-primary">Lire la suite</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+
+                            // Remplacer l'ancienne story par la nouvelle dans le conteneur
+                            $btn.closest('.col-md-6, .col-lg-4').replaceWith(updatedStoryHtml);
+
+                            // Fermer le modal
+                            $('#editStoryModal').modal('hide');
+                        } else {
+                            alert(resp.message || 'Erreur lors de l\'édition de la story.');
+                        }
+                    },
+                    error: function() {
+                        alert('Erreur serveur lors de l\'édition de la story.');
+                    }
+                });
+            });
+
+            $('#logoutBtn').on('click', function() {
+                if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                    $.ajax({
+                        url: 'logout.php',
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function(resp) {
+                            if (resp.success) window.location.href = 'index.html';
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+:root{
+	--color-primary-green:#468246;
+	--color-light-bg:#e9ecef;
+	--color-dark-text:#333;
+	--color-light-grey:#e8e8e8;
+
+	/* hauteurs des éléments fixes (adapter si vous changez les valeurs HTML) */
+	--header-height: 110px; /* augmenté pour éviter que le logo soit rogné */
+	--nav-height: 40px;
+}
+html,body{
+	margin:0;
+	padding:0;
+	font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+	background-color:var(--color-light-bg);
+	color:var(--color-dark-text);
+
+	/* IMPORTANT : espace réservé pour le header + navbar fixes */
+	padding-top: calc(var(--header-height) + var(--nav-height));
+	box-sizing: border-box;
+}
+
+/* Header / Avatar / Dropdown */
+.header-top{
+	background-color:var(--color-primary-green);
+	color:#fff;
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	padding:10px 20px;
+	position:fixed;
+	width:100%;
+	top:0;
+	z-index:1030;
+	height:var(--header-height);
+	box-sizing:border-box;
+	/* autorise l'affichage des éléments qui dépassent (avatar) */
+	overflow: visible;
+}
+.header-top .logo{
+	/* position centrale sans affecter le flow des autres éléments */
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	z-index: 1050;
+	pointer-events: none; /* laisse les clics passer (avatar reste cliquable) */
+}
+.header-top .logo .site-logo {
+	/* augmenter la taille du logo */
+	height: 112px; /* augmenté */
+	width: auto;
+	object-fit: contain;
+	display: inline-block;
+	vertical-align: middle;
+}
+.header-top .logo span {
+	display: none;
+}
+.profile-menu-container{position:relative;}
+.profile-avatar{
+	/* bulle du haut à droite doublée */
+	width:80px;
+	height:80px;
+	border-radius:50%;
+	object-fit:cover;
+	cursor:pointer;
+	background:#ccc;
+	display:inline-block;
+	/* centrer visuellement l'avatar dans le header sans augmenter sa hauteur */
+	transform: translateY(calc((var(--header-height) - 80px) / 2 + 2px));
+	/* garder le chevauchement visible */
+	position: relative;
+}
+.profile-menu-container {
+	position: absolute;
+	right: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 1060;
+}
+.profile-dropdown{
+	position:absolute;top:100%;right:0;background:#fff;border:1px solid #ddd;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,0.1);width:200px;z-index:1040;display:none;padding:10px 0;
+}
+.profile-dropdown a{padding:8px 15px;display:block;text-decoration:none;color:var(--color-dark-text);}
+.profile-dropdown a:hover{background:var(--color-light-bg);}
+.profile-dropdown .divider{height:1px;background:#eee;margin:5px 0;}
+
+/* Navbar under header */
+.navbar-main{
+	background-color:var(--color-primary-green);
+    display:flex;justify-content:center;padding:8px 0;position:fixed;width:100%;top:var(--header-height);z-index:1020;height:var(--nav-height);
+}
+.navbar-main a{color:#fff;text-decoration:none;padding:0 25px;font-size:1rem;font-weight:500;}
+.navbar-main a:hover{color:#e76f51;}
+
+/* Layout containers */
+.app-container{max-width:1200px;margin:0 auto;background:#fff;box-shadow:0 0 15px rgba(0,0,0,.15);padding:0;min-height:calc(100vh - (var(--header-height) + var(--nav-height)));box-sizing:border-box;}
+.content-area{padding:40px 20px;max-width:600px;margin:0 auto;}
+.container{max-width:800px;padding:30px;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);margin:0 auto;box-sizing:border-box;}
+.modification-container{display:flex;justify-content:center;align-items:flex-start;padding-top:50px;padding-bottom:50px;}
+
+/* Forms & Cards */
+.form-card{background:#FFD700;padding:30px;width:100%;max-width:350px;text-align:center;box-shadow:0 4px 8px rgba(0,0,0,.1);}
+.form-card h2{font-size:1.5rem;margin-bottom:25px;color:var(--color-dark-text);}
+.form-card label{display:block;text-align:left;margin-bottom:5px;font-weight:700;}
+.form-card input[type="text"], .form-card input[type="email"], .form-card input[type="password"], .form-card input[type="file"], textarea{width:100%;padding:8px;margin-bottom:20px;border:1px solid #ccc;box-sizing:border-box;}
+.form-card button{background:#000;color:#fff;border:none;padding:10px 20px;cursor:pointer;font-weight:700;}
+.message{margin-top:20px;font-weight:700;}
+
+/* Profile picture preview */
+#currentPic{width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:15px;}
+
+/* Story list styles */
+.story-card{margin-bottom:20px;border:none;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.05);}
+.story-image{max-height:250px;width:100%;object-fit:cover;border-top-left-radius:10px;border-top-right-radius:10px;}
+.tag-badge{margin-right:5px;font-size:0.8em;}
+
+/* Story feed (index/list) */
+.story-item{border:1px solid #ccc;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,.05);max-width:800px;margin:20px auto;padding:20px;background:#fff;position:relative;padding-bottom:40px;word-wrap:break-word;}
+.story-item img{max-height:300px;width:auto;display:block;margin:0 auto 15px auto;}
+.story-content-box, .story-content-full, .story-content-truncated{word-wrap:break-word;}
+.tags-section{position:absolute;top:15px;right:15px;z-index:10;}
+.story-date{position:absolute;bottom:10px;left:15px;right:auto;font-size:0.8rem;color:#6c757d;}
+
+/* --- NOUVEAU : préserver les retours à la ligne saisis par l'utilisateur --- */
+/* Applique pre-wrap seulement aux éléments utilisés pour afficher le contenu des stories */
+.story-content-truncated,
+.story-content-full,
+.story-card .card-body .card-text {
+	white-space: pre-wrap; /* préserve sauts de ligne et espaces consécutifs */
+	word-break: break-word; /* évite débordement sur mots très longs */
+	overflow-wrap: break-word;
+}
+
+/* Profil page — choix de modification */
+.profile-title{
+    text-align: center;
+    font-size: 1.9rem;
+    margin: 0 0 24px;
+    color: var(--color-dark-text);
+    font-weight: 300;
+    letter-spacing: 0.2px;
+}
+
+/* Conteneur des items (si besoin d'un wrapper spécifique) */
+.profile-list {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8px 12px;
+    box-sizing: border-box;
+}
+
+/* Chaque ligne cliquable */
+.profile-item{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: #fafafa;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.06s ease;
+    user-select: none;
+}
+
+/* Apparence à l'appui/clic */
+.profile-item:active{
+    transform: translateY(1px);
+}
+
+/* Hover accessible */
+.profile-item:hover,
+.profile-item:focus{
+    background-color: #f3f6f8;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    outline: none;
+}
+
+/* Label à gauche */
+.profile-label{
+    font-size: 1.05rem;
+    color: var(--color-dark-text);
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Action / chevron à droite */
+.profile-action-arrow{
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-left: 12px;
+    flex: 0 0 auto;
+}
+
+/* Petite icône circulaire (optionnel) */
+.profile-item .item-icon{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:#e9ecef;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-right:12px;
+    flex:0 0 auto;
+}
+
+/* Pour les écrans très petits : réduire padding et taille */
+@media (max-width:480px){
+    .profile-item{
+        padding: 10px 12px;
+    }
+    .profile-label{
+        font-size: 1rem;
+    }
+    .profile-action-arrow{
+        font-size: 1rem;
+    }
+}
+
+/* responsive small fixes */
+@media (max-width:576px){
+	.header-top .logo{font-size:1.4rem;}
+	.header-top .logo .site-logo { height:72px; } /* mobile augmenté */
+	.navbar-main a{padding:0 10px;}
+}
+
+/* Utility */
+.text-center{ text-align:center; }
+.mt-3{ margin-top:1rem; }
+.mb-4{ margin-bottom:1.5rem; }
+/* Make card a positioning context for the delete button */
+.story-card {
+	position: relative; /* garder si besoin pour d'autres éléments absolus */
+}
+
+/* ACTIONS: container qui aligne les boutons sur une ligne à droite */
+.story-actions{
+	display:flex;
+	gap:8px;
+	justify-content:flex-end;
+	align-items:center;
+	margin-top:12px;
+}
+
+/* Position & style neutre pour le bouton de suppression (icône) */
+/* Remplacé le positionnement absolu par un bouton inline arrondi */
+.delete-story-btn {
+	/* plus d'absolu, il est inline dans .story-actions */
+	position: static !important;
+	right: auto !important;
+	bottom: auto !important;
+
+	/* style arrondi, discret */
+	background: rgba(0,0,0,0.05);
+	border: 1px solid rgba(0,0,0,0.06);
+	color: #6c757d;
+	padding: 6px 10px;
+	font-size: 1.05rem;
+	line-height: 1;
+	cursor: pointer;
+	border-radius: 12px; /* arrondi plus prononcé */
+	box-shadow: none;
+}
+
+/* Hover: légère mise en évidence */
+.delete-story-btn:hover {
+	color: #c82333; /* rouge pour hover */
+	background: rgba(200, 40, 50, 0.06);
+}
+
+/* Edit button style (icône) */
+.edit-story-btn{
+	/* inline dans .story-actions */
+	background: rgba(0,0,0,0.05);
+	border: 1px solid rgba(0,0,0,0.06);
+	color: #343a40;
+	padding: 6px 10px;
+	font-size: 1.05rem;
+	line-height:1;
+	cursor:pointer;
+	border-radius:12px;
+}
+.edit-story-btn:hover{
+	background: rgba(0,0,0,0.08);
+	color:#1f2937;
+}
+
+/* Eviter marge top sur read-more quand dans .story-actions */
+.story-actions .read-more-btn {
+	margin-top: 0 !important;
+}
+
+/* Déplacer la date à gauche pour éviter collision avec le bouton */
+.story-date{
+	position:absolute;
+	bottom:10px;
+	left:15px;
+	right:auto;
+	font-size:0.8rem;
+	color:#6c757d;
+}
