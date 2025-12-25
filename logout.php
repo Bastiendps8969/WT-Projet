@@ -1,4 +1,9 @@
 <?php
+/*
+    Fichier : logout.php
+    Rôle : Web service de déconnexion. Nettoie la session et détruit le cookie de session si présent.
+    Sortie : JSON { success: true }
+*/
 // logout.php - WebService de Déconnexion
 
 session_start();
@@ -20,7 +25,7 @@ session_destroy();
 
 // Réponse JSON de succès
 header('Content-Type: application/json');
-echo json_encode(['success' => true, 'message' => 'Déconnexion réussie.']);
+echo json_encode(['success' => true, 'message' => 'Logout successful.']);
 
 // En production, vous pourriez ajouter une redirection ici si le script n'est pas appelé via AJAX :
 // header('Location: index.html');

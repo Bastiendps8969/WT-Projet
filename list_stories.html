@@ -13,10 +13,10 @@
         <div class="profile-menu-container">
             <img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
             <div class="profile-dropdown" id="profileDropdown">
-                <a href="login.html" id="dropdownLoginLink">🔑 Connexion</a>
-                <a href="register.html" id="dropdownRegisterLink">📝 S'inscrire</a>
+                <a href="login.html" id="dropdownLoginLink">🔑 Login</a>
+                <a href="register.html" id="dropdownRegisterLink">📝 Register</a>
                 <div class="divider"></div>
-                <a id="logoutBtn" class="logout-link">🚪 Déconnexion</a>
+                <a id="logoutBtn" class="logout-link">🚪 Log Out</a>
             </div>
         </div>
     </header>
@@ -30,7 +30,7 @@
         <h1 class="mb-4 text-center">📰 Flux des Stories</h1>
         
         <div id="storiesContainer" class="row">
-            <p id="loadingMessage" class="text-center text-muted">Chargement des stories en cours...</p>
+            <p id="loadingMessage" class="text-center text-muted">Loading stories...</p>
         </div>
     </div>
 
@@ -47,20 +47,20 @@
               <input type="hidden" id="editStoryId" name="story_id">
               <div class="mb-3">
                 <label for="editStoryTitle" class="form-label">Titre de la Story</label>
-                <input type="text" class="form-control" id="editStoryTitle" name="story_title" required>
+                <input type="text" class="form-control" id="editStoryTitle" name="titleStory" required>
               </div>
-              <div class="mb-3">
-                <label for="editStoryContent" class="form-label">Contenu de la Story</label>
-                <textarea class="form-control" id="editStoryContent" name="story_content" rows="3" required></textarea>
-              </div>
-              <div class="mb-3">
-                <label for="editStoryTags" class="form-label">Tags (séparés par des virgules)</label>
-                <input type="text" class="form-control" id="editStoryTags" name="story_tags">
-              </div>
-              <div class="mb-3">
-                <label for="editStoryPicture" class="form-label">Image de la Story (URL)</label>
-                <input type="text" class="form-control" id="editStoryPicture" name="story_picture">
-              </div>
+                                <div class="mb-3">
+                                <label for="editStoryContent" class="form-label">Contenu de la Story</label>
+                                <textarea class="form-control" id="editStoryContent" name="contentStory" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editStoryTags" class="form-label">Tags (séparés par des virgules)</label>
+                                <input type="text" class="form-control" id="editStoryTags" name="tagStory">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editStoryPicture" class="form-label">Image of the story (URL)</label>
+                                <input type="text" class="form-control" id="editStoryPicture" name="pictureStory">
+                            </div>
               <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
             </form>
           </div>
@@ -111,7 +111,7 @@
                                 const storyHtml = `
                                     <div class="col-md-6 col-lg-4">
                                         <div class="card story-card">
-                                            ${story.Picture ? `<img src="${story.Picture}" class="card-img-top story-image" alt="Image de la story">` : ''}
+                                            ${story.Picture ? `<img src="${story.Picture}" class="card-img-top story-image" alt="Image of the story">` : ''}
                                             <div class="card-body">
                                                 <h5 class="card-title">${story.StoryTitle}</h5>
                                                 <p class="card-text">${story.Content.substring(0, 150)}...</p>
@@ -120,7 +120,7 @@
                                                 </div>
                                                 <p class="card-text">
                                                     <small class="text-muted">
-                                                        Publié par <strong>${story.Username}</strong> le ${dateStr}
+                                                        Published by <strong>${story.Username}</strong> le ${dateStr}
                                                     </small>
                                                 </p>
                                                 <input type="hidden" class="story-title-data" value="${story.StoryTitle}">
@@ -138,13 +138,13 @@
                                 $storiesContainer.append(storyHtml);
                             });
                         } else {
-                            $storiesContainer.html('<p class="text-center text-muted">Aucune story n\'est disponible pour le moment.</p>');
+                            $storiesContainer.html('<p class="text-center text-muted">No stories are available at the moment.</p>');
                         }
                     },
                     error: function(xhr, status, error) {
                         $loadingMessage.hide();
-                        console.error("Erreur AJAX:", xhr.responseText);
-                        $storiesContainer.html('<p class="text-center text-danger">Erreur de chargement des stories. Veuillez vérifier le serveur.</p>');
+                        console.error("AJAX Error:", xhr.responseText);
+                        $storiesContainer.html('<p class="text-center text-danger">Error loading stories. Please check the server.</p>');
                     }
                 });
             }
@@ -178,7 +178,7 @@
                 e.preventDefault();
                 const $btn = $(this);
                 const storyId = $btn.data('story-id');
-                if (!confirm('Confirmer la suppression de cette story ?')) return;
+                if (!confirm('Confirm deletion of this story?')) return;
                 $btn.prop('disabled', true).text('Suppression...');
                 $.ajax({
                     url: 'delete_story.php',
@@ -190,12 +190,12 @@
                             // retire la carte parent
                             $btn.closest('.col-md-6, .col-lg-4').slideUp(200, function(){ $(this).remove(); });
                         } else {
-                            alert(resp.message || 'Erreur lors de la suppression.');
+                            alert(resp.message || 'Error deleting.');
                             $btn.prop('disabled', false).text('Supprimer');
                         }
                     },
                     error: function() {
-                        alert('Erreur serveur lors de la suppression.');
+                        alert('Server error while deleting.');
                         $btn.prop('disabled', false).text('Supprimer');
                     }
                 });
@@ -224,7 +224,7 @@
                 const formData = $(this).serialize();
 
                 $.ajax({
-                    url: 'edit_story.php',
+                    url: 'update_story.php',
                     type: 'POST',
                     data: formData,
                     dataType: 'json',
@@ -234,7 +234,7 @@
                             const updatedStoryHtml = `
                                 <div class="col-md-6 col-lg-4">
                                     <div class="card story-card">
-                                        ${resp.story.Picture ? `<img src="${resp.story.Picture}" class="card-img-top story-image" alt="Image de la story">` : ''}
+                                        ${resp.story.Picture ? `<img src="${resp.story.Picture}" class="card-img-top story-image" alt="Image of the story">` : ''}
                                         <div class="card-body">
                                             <h5 class="card-title">${resp.story.StoryTitle}</h5>
                                             <p class="card-text">${resp.story.Content.substring(0, 150)}...</p>
@@ -243,7 +243,7 @@
                                             </div>
                                             <p class="card-text">
                                                 <small class="text-muted">
-                                                    Publié par <strong>${resp.story.Username}</strong> le ${new Date(resp.story.CreationDate).toLocaleDateString('fr-FR')}
+                                                    Published by <strong>${resp.story.Username}</strong> le ${new Date(resp.story.CreationDate).toLocaleDateString('fr-FR')}
                                                 </small>
                                             </p>
                                             <input type="hidden" class="story-title-data" value="${resp.story.StoryTitle}">
@@ -264,17 +264,17 @@
                             // Fermer le modal
                             $('#editStoryModal').modal('hide');
                         } else {
-                            alert(resp.message || 'Erreur lors de l\'édition de la story.');
+                            alert(resp.message || 'Error editing the story.');
                         }
                     },
                     error: function() {
-                        alert('Erreur serveur lors de l\'édition de la story.');
+                        alert('Server error while editing the story.');
                     }
                 });
             });
 
             $('#logoutBtn').on('click', function() {
-                if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                if (confirm('Are you sure you want to log out?')) {
                     $.ajax({
                         url: 'logout.php',
                         type: 'POST',

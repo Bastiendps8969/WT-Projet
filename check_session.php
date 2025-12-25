@@ -1,4 +1,9 @@
 <?php
+/*
+    Fichier : check_session.php
+    Rôle : Vérifie l'état de la session côté serveur et retourne un JSON indiquant si l'utilisateur est connecté.
+    Utilisation : Requêté par le front-end pour adapter l'interface (afficher avatar, liens, etc.).
+*/
 header('Content-Type: application/json');
 session_start();
 

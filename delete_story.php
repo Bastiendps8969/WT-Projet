@@ -6,7 +6,7 @@ require_once 'config.php';
 // Vérification session
 if (!isset($_SESSION['user_uuid']) || !isset($_SESSION['username'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Non autorisé.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
     exit;
 }
 
@@ -15,13 +15,13 @@ $username = $_SESSION['username'];
 
 // Requête POST attendue
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['story_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Requête invalide.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid request.']);
     exit;
 }
 
 $storyId = trim($_POST['story_id']);
-if (!preg_match('/^[0-9a-fA-F-]{36}$/', $storyId)) {
-    echo json_encode(['success' => false, 'message' => 'Identifiant de story invalide.']);
+    if (!preg_match('/^[0-9a-fA-F-]{36}$/', $storyId)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid story identifier.']);
     exit;
 }
 
@@ -35,7 +35,7 @@ try {
 
     if (!$row) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Story introuvable.']);
+        echo json_encode(['success' => false, 'message' => 'Story not found.']);
         exit;
     }
 
@@ -46,7 +46,7 @@ try {
     $isAdmin = ($username === 'Admin');
     if (!$isAdmin && $authorUuid !== $userUuid) {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Accès refusé. Vous ne pouvez pas supprimer cette story.']);
+        echo json_encode(['success' => false, 'message' => 'Access denied. You cannot delete this story.']);
         exit;
     }
 
@@ -61,7 +61,7 @@ try {
 
     if ($delStory->rowCount() === 0) {
         $pdo->rollBack();
-        echo json_encode(['success' => false, 'message' => 'Impossible de supprimer la story.']);
+        echo json_encode(['success' => false, 'message' => 'Unable to delete the story.']);
         exit;
     }
 
@@ -76,11 +76,11 @@ try {
         }
     }
 
-    echo json_encode(['success' => true, 'message' => 'Story supprimée.']);
+    echo json_encode(['success' => true, 'message' => 'Story deleted.']);
 
 } catch (\PDOException $e) {
     if ($pdo && $pdo->inTransaction()) $pdo->rollBack();
     error_log("DB Error in delete_story.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Erreur serveur.']);
+    echo json_encode(['success' => false, 'message' => 'Server error.']);
 }
 ?>

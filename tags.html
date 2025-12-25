@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
+<!--
+    Fichier : tags.html
+    Rôle : Page de gestion/affichage des tags (en développement). Affiche une alerte informative.
+    Commentaires : Entête en français ajouté pour documentation.
+-->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,11 +21,11 @@
         <div class="profile-menu-container">
             <img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
             <div class="profile-dropdown" id="profileDropdown">
-                <a href="login.html" id="dropdownLoginLink">🔑 Connexion</a>
-                <a href="register.html" id="dropdownRegisterLink">📝 S'inscrire</a>
-                <a href="profile.html" id="dropdownProfileLink">👤 Mon Profil</a>
+                <a href="login.html" id="dropdownLoginLink">🔑 Login</a>
+                <a href="register.html" id="dropdownRegisterLink">📝 Register</a>
+                <a href="profile.html" id="dropdownProfileLink">👤 My Profile</a>
                 <div class="divider"></div>
-                <a id="logoutBtn" class="logout-link">🚪 Déconnexion</a>
+                <a id="logoutBtn" class="logout-link">🚪 Log Out</a>
             </div>
         </div>
     </header>
@@ -32,7 +37,7 @@
     </nav>
     <div class="container mt-5">
         <div class="alert alert-info text-center" role="alert" style="font-size:1.3rem;">
-            🚧 Page Tags en cours de développement 🚧
+            🚧 Tags page under development 🚧
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -64,7 +69,7 @@
             });
         });
         $('#logoutBtn').on('click', function() {
-            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+            if (confirm('Do you really want to log out?')) {
                 $.ajax({
                     url: 'logout.php',
                     type: 'POST',

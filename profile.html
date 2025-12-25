@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
+<!--
+	Fichier : profile.html
+	Rôle : Page de profil utilisateur (affiche les informations et les stories de l'utilisateur connecté).
+	Commentaires : En-tête explicatif en français ajouté; ne pas modifier la logique côté client ici.
+-->
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,11 +24,11 @@
 			<!-- Remplacé le div.profile-icon par une image avatar -->
 			<img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
 			<div class="profile-dropdown" id="profileDropdown">
-				<a href="login.html" id="dropdownLoginLink">🔑 Connexion</a>
-				<a href="register.html" id="dropdownRegisterLink">📝 S'inscrire</a>
-				<a href="profile.html" id="dropdownProfileLink" class="active">👤 Mon Profil</a> 
+				<a href="login.html" id="dropdownLoginLink">🔑 Login</a>
+				<a href="register.html" id="dropdownRegisterLink">📝 Register</a>
+				<a href="profile.html" id="dropdownProfileLink" class="active">👤 My Profile</a> 
 				<div class="divider"></div>
-				<a id="logoutBtn" class="logout-link">🚪 Déconnexion</a>
+				<a id="logoutBtn" class="logout-link">🚪 Log Out</a>
 			</div>
 		</div>
 	</header>
@@ -111,7 +116,7 @@
 							$navCreateLink.show(); 
 						} else {
 							// Si déconnecté, rediriger vers la page de connexion
-							alert('Vous devez être connecté pour voir votre profil.');
+										alert('You must be logged in to view your profile.');
 							window.location.href = 'login.html'; 
 						}
 					},
@@ -124,7 +129,7 @@
 
 			// 2. Gestion de la Déconnexion 
 			function handleLogout() {
-				if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+				if (confirm('Are you sure you want to log out?')) {
 					$.ajax({
 						url: 'logout.php',
 						type: 'POST',
@@ -133,7 +138,7 @@
 							if (response.success) {
 								window.location.href = 'index.html'; 
 							} else {
-								alert('Erreur lors de la déconnexion.');
+								alert('Error during logout.');
 							}
 						}
 					});

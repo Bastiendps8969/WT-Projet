@@ -28,7 +28,7 @@ try {
     // 6. Capture les erreurs de base de données
     // Réponse générique pour éviter d'exposer des détails sensibles
     error_log("DB Error in get_tags.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Erreur lors de la récupération des tags.']);
+    echo json_encode(['success' => false, 'message' => 'Error retrieving tags.']);
 
 } catch (Exception $e) {
     // 7. Capture les autres exceptions

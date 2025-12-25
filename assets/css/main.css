@@ -104,7 +104,7 @@ html,body{
 .modification-container{display:flex;justify-content:center;align-items:flex-start;padding-top:50px;padding-bottom:50px;}
 
 /* Forms & Cards */
-.form-card{background:#FFD700;padding:30px;width:100%;max-width:350px;text-align:center;box-shadow:0 4px 8px rgba(0,0,0,.1);}
+
 .form-card h2{font-size:1.5rem;margin-bottom:25px;color:var(--color-dark-text);}
 .form-card label{display:block;text-align:left;margin-bottom:5px;font-weight:700;}
 .form-card input[type="text"], .form-card input[type="email"], .form-card input[type="password"], .form-card input[type="file"], textarea{width:100%;padding:8px;margin-bottom:20px;border:1px solid #ccc;box-sizing:border-box;}
@@ -242,6 +242,36 @@ html,body{
 	position: relative; /* garder si besoin pour d'autres éléments absolus */
 }
 
+/* Signup card (centered) */
+.signup-card{
+	width:360px;
+	margin:70px auto;
+	background:#fff;
+	border:1px solid #ccc;
+	border-radius:6px;
+	padding:24px 28px;
+	box-shadow:0 6px 20px rgba(0,0,0,0.08);
+}
+
+/* Strong horizontal centering when header is hidden (signup page) */
+body.signup-page .signup-card{
+	position:relative;
+	left:50%;
+	transform:translateX(-50%);
+	margin-left:0; /* avoid double-centering from auto */
+}
+.signup-title{font-size:1.6rem;text-align:center;margin:6px 0 18px;font-weight:600}
+.signup-card .form-label{font-weight:600;margin-bottom:8px}
+.signup-card .form-control{padding:8px 10px;border:1px solid #dcdcdc}
+.signup-card .btn-signup{background:#000;color:#fff;border:none;padding:10px 20px;font-weight:700}
+.signup-card .btn-signup:hover{background:#111}
+.signup-card .btn-login{background:#fff;border:1px solid #cfcfcf;color:#333;padding:8px 18px;text-decoration:none;display:inline-block}
+.signup-card .btn-login:hover{background:#f8f8f8}
+
+@media (max-width:420px){
+	.signup-card{width:92%;margin:30px auto;padding:18px}
+}
+
 /* ACTIONS: container qui aligne les boutons sur une ligne à droite */
 .story-actions{
 	display:flex;
@@ -307,4 +337,25 @@ html,body{
 	right:auto;
 	font-size:0.8rem;
 	color:#6c757d;
+}
+
+/* Login page styles (matching wireframe) */
+.login-page{display:flex;align-items:flex-start;justify-content:center;padding:24px 20px 80px;}
+.login-container{max-width:520px;width:100%;margin:0 auto;padding-top:6px}
+.login-title{text-align:center;font-size:2.2rem;margin-bottom:14px;font-weight:400}
+.login-card{background:#fff;border:1px solid #cfcfcf;padding:24px 26px;box-sizing:border-box;min-height:200px;width:460px;max-width:100%;margin:0 auto}
+.login-card .form-group{margin-bottom:18px}
+.login-card label{display:block;margin-bottom:8px;font-weight:700;font-size:1rem}
+.login-card .form-control{width:100%;padding:10px 12px;border:1px solid #d6d6d6;background:#fff;border-radius:2px}
+.login-card .form-control::placeholder{color:#bdbdbd}
+.form-actions{display:flex;align-items:center;gap:14px;margin-top:6px}
+.btn-primary-login{background:#000;color:#fff;border:none;padding:10px 22px;font-weight:700;margin-right:0;display:inline-block;border-radius:2px}
+.btn-primary-login:hover{background:#111}
+.btn-outline-login{background:#fff;color:#333;border:1px solid #cfcfcf;padding:10px 18px;display:inline-block;text-decoration:none;border-radius:2px}
+.btn-outline-login:hover{background:#fafafa}
+
+@media (max-width:480px){
+    .login-card{padding:18px}
+    .login-card .form-control{width:100%}
+    .login-container{padding:0 8px}
 }

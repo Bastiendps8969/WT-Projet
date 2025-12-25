@@ -10,12 +10,12 @@ require_once 'config.php';
 // --- VÉRIFICATION DE LA SESSION ---
 if (!isset($_SESSION['user_uuid'])) {
     http_response_code(401); 
-    echo json_encode(['success' => false, 'message' => 'Non autorisé. Veuillez vous reconnecter.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in again.']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_FILES['new_profile_pic'])) {
-    echo json_encode(['success' => false, 'message' => 'Requête invalide ou fichier manquant.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid request or missing file.']);
     exit;
 }
 
@@ -30,18 +30,18 @@ $max_size = 5 * 1024 * 1024; // 5 Mo
 
 // 1. Vérifications de base du fichier
 if ($file['error'] !== UPLOAD_ERR_OK) {
-    echo json_encode(['success' => false, 'message' => 'Erreur lors du téléchargement du fichier. Code: ' . $file['error']]);
+    echo json_encode(['success' => false, 'message' => 'Error uploading file. Code: ' . $file['error']]);
     exit;
 }
 if ($file['size'] > $max_size) {
-    echo json_encode(['success' => false, 'message' => 'Le fichier est trop volumineux (max 5Mo).']);
+    echo json_encode(['success' => false, 'message' => 'File is too large (max 5MB).']);
     exit;
 }
 
 // Vérifier que le fichier est bien une image
 $imageInfo = @getimagesize($file['tmp_name']);
 if ($imageInfo === false) {
-    echo json_encode(['success' => false, 'message' => 'Le fichier téléchargé n\'est pas une image valide.']);
+    echo json_encode(['success' => false, 'message' => 'Uploaded file is not a valid image.']);
     exit;
 }
 
@@ -49,7 +49,7 @@ $file_info = pathinfo($file['name']);
 $file_extension = strtolower($file_info['extension']);
 
 if (!in_array($file_extension, $allowed_extensions)) {
-    echo json_encode(['success' => false, 'message' => 'Type de fichier non autorisé.']);
+    echo json_encode(['success' => false, 'message' => 'File type not allowed.']);
     exit;
 }
 
@@ -87,13 +87,13 @@ if (move_uploaded_file($file['tmp_name'], $destination_fs)) {
         $stmt = $pdo->prepare("UPDATE User SET Picture = :pic_path WHERE BIN_TO_UUID(IdUser) = :user_id");
         $success = $stmt->execute([':pic_path' => $db_path, ':user_id' => $user_id]);
 
-        if ($success && $stmt->rowCount() > 0) {
+            if ($success && $stmt->rowCount() > 0) {
             // Mettre à jour la session si vous stockez le chemin de l'image
             $_SESSION['profile_pic'] = $db_path; // stocke 'uploads/profile_pics/xxx.jpg'
 
             echo json_encode([
                 'success' => true, 
-                'message' => 'Photo de profil mise à jour.',
+                'message' => 'Profile photo updated.',
                 'new_pic_url' => $db_path // Renvoyer le chemin pour l'affichage immédiat
             ]);
         } else {
@@ -101,7 +101,7 @@ if (move_uploaded_file($file['tmp_name'], $destination_fs)) {
             if (file_exists($destination_fs)) unlink($destination_fs);
             $dbError = $stmt->errorInfo();
             error_log("update_profile_pic.php - DB update failed for user_uuid={$user_id} - errorInfo: " . json_encode($dbError));
-            echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'enregistrement en base de données.']);
+            echo json_encode(['success' => false, 'message' => 'Error saving to database.']);
         }
 
     } catch (\PDOException $e) {
@@ -110,15 +110,15 @@ if (move_uploaded_file($file['tmp_name'], $destination_fs)) {
         // Exposer le message d'erreur en mode debug uniquement
         $debug = $GLOBALS['DB_CONFIG']['debug'] ?? false;
         if ($debug) {
-            echo json_encode(['success' => false, 'message' => 'Erreur serveur interne: ' . $e->getMessage()]);
+            echo json_encode(['success' => false, 'message' => 'Internal server error: ' . $e->getMessage()]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Erreur serveur interne.']);
+            echo json_encode(['success' => false, 'message' => 'Internal server error.']);
         }
     }
 } else {
     // Échec du déplacement (problème de permissions de dossier)
-    error_log("update_profile_pic.php - move_uploaded_file failed. destFs: ".$destination_fs);
-    echo json_encode(['success' => false, 'message' => 'Erreur: Impossible de déplacer le fichier. Vérifiez les permissions du dossier "uploads/profile_pics/".']);
+    error_log("update_profile_pic.php - move_uploaded_file failed. destFs:".$destination_fs);
+    echo json_encode(['success' => false, 'message' => 'Error: Unable to move file. Check permissions of uploads/profile_pics/.']);
 }
 
 exit;

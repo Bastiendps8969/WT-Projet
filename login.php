@@ -16,7 +16,7 @@ try {
     $password = $_POST['password'] ?? '';
 
     if (empty($email) || empty($password)) {
-        echo json_encode(['success' => false, 'message' => 'Veuillez remplir tous les champs.']);
+        echo json_encode(['success' => false, 'message' => 'Please fill in all fields.']);
         exit;
     }
 
@@ -49,17 +49,17 @@ try {
         // Suppression du mot de passe de l'objet pour la sécurité
         unset($user['Password']); 
 
-        echo json_encode(['success' => true, 'message' => 'Connexion réussie.', 'user_id' => $user['IdUser']]);
+        echo json_encode(['success' => true, 'message' => 'Login successful.', 'user_id' => $user['IdUser']]);
         
     } else {
         // Échec de la connexion
-        echo json_encode(['success' => false, 'message' => 'Email ou mot de passe incorrect.']);
+        echo json_encode(['success' => false, 'message' => 'Incorrect email or password.']);
     }
 
 } catch (\PDOException $e) {
     // Erreur de base de données
     error_log("DB Error in login.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Erreur du serveur lors de la connexion.']);
+    echo json_encode(['success' => false, 'message' => 'Server error during login.']);
 
 } catch (Exception $e) {
     // Autres erreurs

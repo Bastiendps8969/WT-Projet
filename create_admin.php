@@ -14,7 +14,7 @@ try {
     $check->execute([':username' => $adminUsername]);
 
     if ($check->fetchColumn() > 0) {
-        echo json_encode(['success' => true, 'message' => 'Le compte Admin existe déjà.']);
+        echo json_encode(['success' => true, 'message' => 'Admin account already exists.']);
         exit;
     }
 
@@ -26,13 +26,13 @@ try {
     $ok = $insert->execute([':username' => $adminUsername, ':email' => $adminEmail, ':password' => $hashed]);
 
     if ($ok) {
-        echo json_encode(['success' => true, 'message' => 'Compte Admin créé.', 'username' => $adminUsername, 'password' => $adminPasswordPlain]);
+        echo json_encode(['success' => true, 'message' => 'Admin account created.', 'username' => $adminUsername, 'password' => $adminPasswordPlain]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Échec de la création du compte Admin.']);
+        echo json_encode(['success' => false, 'message' => 'Failed to create Admin account.']);
     }
 
 } catch (\PDOException $e) {
     error_log("DB Error in create_admin.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Erreur DB.']);
+    echo json_encode(['success' => false, 'message' => 'Database error.']);
 }
 ?>

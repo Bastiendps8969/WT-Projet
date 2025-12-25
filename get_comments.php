@@ -1,4 +1,10 @@
 <?php
+/*
+    Fichier : get_comments.php
+    Rôle : Retourne les commentaires d'une story donnée en JSON.
+    Entrées GET : `story_id` (UUID string) attendu.
+    Sortie : JSON { success: bool, comments: [...] }
+*/
 header('Content-Type: application/json');
 session_start();
 require_once 'config.php';
@@ -7,7 +13,7 @@ $currentUserId = $_SESSION['user_uuid'] ?? null;
 $currentUsername = $_SESSION['username'] ?? null;
 
 if (!isset($_GET['story_id'])) {
-    echo json_encode(['success' => false, 'message' => 'ID story manquant.']);
+    echo json_encode(['success' => false, 'message' => 'Missing story ID.']);
     exit;
 }
 
@@ -63,6 +69,6 @@ try {
     echo json_encode(['success' => true, 'comments' => $comments]);
 } catch (\PDOException $e) {
     error_log("DB Error in get_comments.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Erreur serveur.']);
+    echo json_encode(['success' => false, 'message' => 'Server error.']);
 }
 ?>

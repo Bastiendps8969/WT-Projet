@@ -10,12 +10,12 @@ require_once 'config.php';
 // --- VÉRIFICATION DE LA SESSION ---
 if (!isset($_SESSION['user_uuid'])) {
     http_response_code(401); // Non autorisé
-    echo json_encode(['success' => false, 'message' => 'Non autorisé. Veuillez vous reconnecter.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in again.']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['new_email'])) {
-    echo json_encode(['success' => false, 'message' => 'Requête invalide.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid request.']);
     exit;
 }
 
@@ -24,7 +24,7 @@ $user_id = $_SESSION['user_uuid']; // Correction ici
 
 // 1. Validation de l'adresse email
 if (empty($new_email) || !filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(['success' => false, 'message' => 'L\'adresse email fournie est invalide.']);
+    echo json_encode(['success' => false, 'message' => 'The provided email address is invalid.']);
     exit;
 }
 
@@ -36,7 +36,7 @@ try {
     $stmt->execute([':email' => $new_email, ':user_id' => $user_id]);
     
     if ($stmt->fetchColumn() > 0) {
-        echo json_encode(['success' => false, 'message' => 'Cet email est déjà utilisé par un autre compte.']);
+        echo json_encode(['success' => false, 'message' => 'This email is already used by another account.']);
         exit;
     }
     
@@ -47,20 +47,20 @@ try {
     if ($success) {
         // Mettre à jour la session si nécessaire
         $_SESSION['email'] = $new_email; 
-        echo json_encode(['success' => true, 'message' => 'Email mis à jour avec succès.']);
+        echo json_encode(['success' => true, 'message' => 'Email updated successfully.']);
     } else {
         // Ajout d'un log pour le debug
-        error_log("Erreur lors de l'enregistrement en base de données (update_email.php)");
-        echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'enregistrement en base de données.']);
+        error_log("Error saving to database (update_email.php)");
+        echo json_encode(['success' => false, 'message' => 'Error saving to database.']);
     }
 
 } catch (\PDOException $e) {
     error_log("DB Error in update_email.php: " . $e->getMessage());
     $debug = $GLOBALS['DB_CONFIG']['debug'] ?? false;
     if ($debug) {
-        echo json_encode(['success' => false, 'message' => 'Erreur serveur interne: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Internal server error: ' . $e->getMessage()]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Erreur serveur interne.']);
+        echo json_encode(['success' => false, 'message' => 'Internal server error.']);
     }
 }
 

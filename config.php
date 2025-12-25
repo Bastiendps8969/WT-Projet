@@ -29,7 +29,7 @@ function getDBConnection() {
         return $pdo;
     } catch (\PDOException $e) {
         // En cas d'échec de la connexion, lance une exception
-        throw new \PDOException("Erreur de connexion à la base de données: " . $e->getMessage(), (int)$e->getCode());
+        throw new \PDOException("Database connection error: " . $e->getMessage(), (int)$e->getCode());
     }
 }
 

@@ -17,11 +17,11 @@
         <div class="profile-menu-container">
             <img id="profileAvatar" class="profile-avatar" src="assets/ImageParDefaut.png" alt="Avatar">
              <div class="profile-dropdown" id="profileDropdown">
-                <a href="login.html" id="dropdownLoginLink" style="display:none;">🔑 Connexion</a>
-                <a href="register.html" id="dropdownRegisterLink" style="display:none;">📝 S'inscrire</a>
-                <a href="profile.html" id="dropdownProfileLink">👤 Mon Profil</a> 
+                <a href="login.html" id="dropdownLoginLink" style="display:none;">🔑 Login</a>
+                <a href="register.html" id="dropdownRegisterLink" style="display:none;">📝 Register</a>
+                <a href="profile.html" id="dropdownProfileLink">👤 My Profile</a> 
                 <div class="divider"></div>
-                <a id="logoutBtn" class="logout-link">🚪 Déconnexion</a>
+                <a id="logoutBtn" class="logout-link">🚪 Log Out</a>
             </div>
         </div>
     </header>
@@ -38,11 +38,11 @@
                 <h2>Change Email</h2>
                 <form id="emailForm">
                     <label for="new_email">New Email</label>
-                    <input type="email" id="new_email" name="new_email" required placeholder="Nouvelle adresse email">
+                    <input type="email" id="new_email" name="new_email" required placeholder="New email address">
                     
                     <button type="submit">Validate Change</button>
                     <p id="message" class="message"></p>
-                    <a href="profile.html" style="display:block; margin-top:15px; color:#333;">Retour au Profil</a>
+                    <a href="profile.html" style="display:block; margin-top:15px; color:#333;">Back to Profile</a>
                 </form>
             </div>
         </div>
@@ -54,7 +54,7 @@
         $('#profileAvatar').on('click', function() { $('#profileDropdown').toggle(); });
         $(document).on('click', function(e) { if (!$(e.target).closest('.profile-menu-container').length) { $('#profileDropdown').hide(); } });
         $('#logoutBtn').on('click', function() { 
-             if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+             if (confirm('Are you sure you want to log out?')) {
                  window.location.href = 'login.html'; 
              }
         });
@@ -65,7 +65,7 @@
             const newEmail = $('#new_email').val();
             const $message = $('#message');
             
-            $message.text('Modification en cours...');
+            $message.text('Updating...');
             
             $.ajax({
                 url: 'update_email.php', // Endpoint à créer
@@ -74,16 +74,16 @@
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        $message.css('color', 'green').text('Email mis à jour avec succès !');
+                        $message.css('color', 'green').text('Email updated successfully!');
                         setTimeout(() => {
                            window.location.href = 'profile.html';
                         }, 1500);
                     } else {
-                        $message.css('color', 'red').text(response.message || 'Erreur lors de la mise à jour.');
+                        $message.css('color', 'red').text(response.message || 'Error updating.');
                     }
                 },
                 error: function() {
-                    $message.css('color', 'red').text('Erreur de connexion au serveur.');
+                    $message.css('color', 'red').text('Server connection error.');
                 }
             });
         });
@@ -96,7 +96,7 @@
                 dataType: 'json',
                 success: function(response) {
                     if (response.status !== 'connected') {
-                        alert('Vous devez être connecté pour modifier votre profil.');
+                        alert('You must be logged in to edit your profile.');
                         window.location.href = 'login.html'; 
                     } else {
                         if (response.profile_pic) {

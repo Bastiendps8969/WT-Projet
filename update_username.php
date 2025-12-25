@@ -10,7 +10,7 @@ session_start();
 if (!isset($_SESSION['user_uuid'])) {
     // Si non connecté, renvoie une erreur 401 (Non autorisé)
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Non autorisé. Veuillez vous reconnecter.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in again.']);
     exit;
 }
 
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_username'])) {
     
     // 1. Validation de base du nom d'utilisateur
     if (empty($new_username) || strlen($new_username) < 3 || strlen($new_username) > 20) {
-        echo json_encode(['success' => false, 'message' => 'Le nom d\'utilisateur doit contenir entre 3 et 20 caractères.']);
+        echo json_encode(['success' => false, 'message' => 'Username must be between 3 and 20 characters.']);
         exit;
     }
 
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_username'])) {
         $check->execute([':username' => $new_username, ':user_id' => $current_user_id]);
 
         if ($check->fetchColumn() > 0) {
-            echo json_encode(['success' => false, 'message' => 'Ce nom d\'utilisateur est déjà pris.']);
+            echo json_encode(['success' => false, 'message' => 'This username is already taken.']);
             exit;
         }
 
@@ -51,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_username'])) {
         if ($ok && $update->rowCount() > 0) {
             // Mettre à jour la session
             $_SESSION['username'] = $new_username;
-            echo json_encode(['success' => true, 'message' => 'Nom d\'utilisateur mis à jour avec succès.']);
+            echo json_encode(['success' => true, 'message' => 'Username updated successfully.']);
             exit;
         } else {
             // Aucun changement effectué (peut-être même même valeur) => considérer comme succès silencieux ou message informatif
-            echo json_encode(['success' => false, 'message' => 'Aucune modification effectuée.']);
+            echo json_encode(['success' => false, 'message' => 'No changes made.']);
             exit;
         }
 
@@ -63,16 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_username'])) {
         error_log("DB Error in update_username.php: " . $e->getMessage());
         $debug = $GLOBALS['DB_CONFIG']['debug'] ?? false;
         if ($debug) {
-            echo json_encode(['success' => false, 'message' => 'Erreur serveur interne: ' . $e->getMessage()]);
+            echo json_encode(['success' => false, 'message' => 'Internal server error: ' . $e->getMessage()]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Erreur serveur interne.']);
+            echo json_encode(['success' => false, 'message' => 'Internal server error.']);
         }
         exit;
     }
 
 } else {
-    // Si la requête n'est pas POST ou manque de données
-    echo json_encode(['success' => false, 'message' => 'Requête invalide ou données manquantes.']);
+    // If the request is not POST or data is missing
+    echo json_encode(['success' => false, 'message' => 'Invalid request or missing data.']);
 }
 
 // Termine l'exécution du script

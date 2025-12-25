@@ -10,12 +10,12 @@ require_once 'config.php';
 // --- VÉRIFICATION DE LA SESSION ---
 if (!isset($_SESSION['user_uuid'])) {
     http_response_code(401); 
-    echo json_encode(['success' => false, 'message' => 'Non autorisé. Veuillez vous reconnecter.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in again.']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['current_password'], $_POST['new_password'])) {
-    echo json_encode(['success' => false, 'message' => 'Requête invalide ou données manquantes.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid request or missing data.']);
     exit;
 }
 
@@ -25,11 +25,11 @@ $user_id = $_SESSION['user_uuid']; // use UUID string
 
 // 1. Validation du nouveau mot de passe (taille minimum, complexité, etc.)
 if (strlen($new_password) < 8) {
-    echo json_encode(['success' => false, 'message' => 'Le nouveau mot de passe doit faire au moins 8 caractères.']);
+    echo json_encode(['success' => false, 'message' => 'New password must be at least 8 characters.']);
     exit;
 }
 if ($current_password === $new_password) {
-    echo json_encode(['success' => false, 'message' => 'Le nouveau mot de passe doit être différent du mot de passe actuel.']);
+    echo json_encode(['success' => false, 'message' => 'New password must be different from the current password.']);
     exit;
 }
 
@@ -45,9 +45,9 @@ try {
         error_log("update_password.php - user not found for user_uuid: " . var_export($user_id, true));
         $debug = $GLOBALS['DB_CONFIG']['debug'] ?? false;
         if ($debug) {
-            echo json_encode(['success' => false, 'message' => 'Erreur utilisateur introuvable. user_uuid=' . $user_id]);
+            echo json_encode(['success' => false, 'message' => 'User not found. user_uuid=' . $user_id]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Erreur utilisateur introuvable.']);
+            echo json_encode(['success' => false, 'message' => 'User not found.']);
         }
         exit;
     }
@@ -56,7 +56,7 @@ try {
 
     // 3. VÉRIFICATION DU MOT DE PASSE ACTUEL
     if (!password_verify($current_password, $hashed_password)) {
-        echo json_encode(['success' => false, 'message' => 'Mot de passe actuel incorrect.']);
+        echo json_encode(['success' => false, 'message' => 'Current password is incorrect.']);
         exit;
     }
 
@@ -69,18 +69,18 @@ try {
     if ($success) {
         // C'est souvent une bonne pratique de forcer la reconnexion après un changement de mot de passe
         session_destroy();
-        echo json_encode(['success' => true, 'message' => 'Mot de passe mis à jour. Veuillez vous reconnecter.']);
+        echo json_encode(['success' => true, 'message' => 'Password updated. Please log in again.']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Erreur lors de la mise à jour du mot de passe.']);
+        echo json_encode(['success' => false, 'message' => 'Error updating password.']);
     }
 
 } catch (\PDOException $e) {
     error_log("DB Error in update_password.php: " . $e->getMessage());
     $debug = $GLOBALS['DB_CONFIG']['debug'] ?? false;
-    if ($debug) {
-        echo json_encode(['success' => false, 'message' => 'Erreur serveur interne: ' . $e->getMessage()]);
+        if ($debug) {
+        echo json_encode(['success' => false, 'message' => 'Internal server error: ' . $e->getMessage()]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Erreur serveur interne.']);
+        echo json_encode(['success' => false, 'message' => 'Internal server error.']);
     }
 }
 

@@ -12,26 +12,22 @@ try {
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    $passwordConfirm = $_POST['password_confirm'] ?? '';
 
-    // Validation des champs vides
-    if (empty($username) || empty($email) || empty($password) || empty($passwordConfirm)) {
-        throw new Exception('Tous les champs sont obligatoires.');
+    // Validation des champs vides (pas de confirmation requise)
+    if (empty($username) || empty($email) || empty($password)) {
+        throw new Exception('All fields are required.');
     }
 
     // Validation de la longueur du mot de passe
     if (strlen($password) < 8) {
-        throw new Exception('Le mot de passe doit contenir au moins 8 caractères.');
+        throw new Exception('Password must be at least 8 characters.');
     }
 
-    // Validation de la confirmation du mot de passe
-    if ($password !== $passwordConfirm) {
-        throw new Exception('Les mots de passe ne correspondent pas.');
-    }
+    // (No password confirmation check requested)
 
     // Validation simple du format de l'email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        throw new Exception('Format d\'email invalide.');
+        throw new Exception('Invalid email format.');
     }
 
     // 2. Hachage du mot de passe (Bcrypt recommandé)
@@ -48,7 +44,7 @@ try {
     $stmtCheck->execute();
     
     if ($stmtCheck->fetchColumn() > 0) {
-        throw new Exception('Cet email ou ce nom d\'utilisateur est déjà utilisé.');
+        throw new Exception('This email or username is already in use.');
     }
 
     // 5. Insertion du nouvel utilisateur
@@ -64,15 +60,15 @@ try {
     $stmtInsert->bindParam(':password', $hashedPassword);
     
     if ($stmtInsert->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Compte créé avec succès. Vous pouvez maintenant vous connecter.']);
+        echo json_encode(['success' => true, 'message' => 'Account created successfully. You can now log in.']);
     } else {
-        throw new Exception('Erreur lors de l\'enregistrement de l\'utilisateur.');
+        throw new Exception('Error saving the user.');
     }
 
 } catch (\PDOException $e) {
     // Erreur de base de données
     error_log("DB Error in register.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Erreur du serveur (base de données).']);
+    echo json_encode(['success' => false, 'message' => 'Server error (database).']);
 
 } catch (Exception $e) {
     // Erreur de validation ou autre
