@@ -16,24 +16,6 @@
     padding-right: 8px;
 }
 
-.vote-section {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-    white-space: nowrap;
-}
-/* vote buttons removed; static counts displayed instead */
-
-.comment-vote-section {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 6px;
-    white-space: nowrap;
-}
-.comment-vote-count-up { color: #198754; font-weight: bold; display:none; }
-.comment-vote-count-down { color: #dc3545; font-weight: bold; display:none; }
 </style>
 </head>
 <body>
@@ -381,7 +363,6 @@
                             resp.comments.forEach(function(c) {
                                 html += `<div class="comment mb-1" data-comment-id="${c.IdComment}">
                                     <strong>${c.Username}</strong> : <span>${$('<div>').text(c.Content).html()}</span>
-                                    ${commentVoteSectionHtml(c)}
                                     <span class="text-muted" style="font-size:0.85em;">${c.CreationDate}</span>
                                     ${c.can_delete ? `<button class="delete-comment-btn btn btn-link btn-sm text-danger p-0 ms-2" title="Supprimer" style="font-size:0.95em;">🗑️</button>` : ''}
                                 </div>`;
@@ -411,13 +392,7 @@
                 `;
             }
 
-            // Ajout : fonction pour générer la section vote d'un commentaire
-            function commentVoteSectionHtml(comment) {
-                // Voting removed: do not render comment vote counts
-                return '';
-            }
 
-            // Voting on comments disabled: client-side handlers removed
             
             // Gestion de l'ajout de commentaire (délégué)
             $('#story_feed_container').on('submit', '.add-comment-form', function(e) {
