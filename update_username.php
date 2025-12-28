@@ -22,8 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_username'])) {
     $new_username = trim($_POST['new_username']);
     
     // 1. Validation de base du nom d'utilisateur
-    if (empty($new_username) || strlen($new_username) < 3 || strlen($new_username) > 20) {
-        echo json_encode(['success' => false, 'message' => 'Username must be between 3 and 20 characters.']);
+    if (empty($new_username)) {
+        echo json_encode(['success' => false, 'message' => 'Username cannot be empty.']);
+        exit;
+    }
+
+    if (!preg_match('/^[A-Za-z0-9\s]{1,20}$/', $new_username)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid username format.']);
         exit;
     }
 

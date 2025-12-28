@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['comment_id'])) {
 }
 
 $commentId = trim($_POST['comment_id']);
-if (!preg_match('/^[0-9a-fA-F-]{36}$/', $commentId)) {
+if (!preg_match('/^[0-9a-fA-F-\s]{36}$/', $commentId)) {
     echo json_encode(['success' => false, 'message' => 'Invalid comment identifier.']);
     exit;
 }

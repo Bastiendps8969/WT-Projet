@@ -4,11 +4,7 @@ header('Content-Type: application/json');
 session_start();
 require_once 'config.php';
 
-/**
- * Active en DEV uniquement !
- * Mets à false en prod.
- */
-$APP_DEBUG = true;
+$APP_DEBUG = false;
 
 /**
  * Pour capturer aussi les erreurs fatales (qui ne passent pas dans catch PDOException).
@@ -58,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['story_id'])) {
 }
 
 $storyId = trim($_POST['story_id']);
-if (!preg_match('/^[0-9a-fA-F-]{36}$/', $storyId)) {
+if (!preg_match('/^[0-9a-fA-F-\s]{36}$/', $storyId)) {
     echo json_encode(['success' => false, 'message' => 'Invalid story identifier.']);
     exit;
 }

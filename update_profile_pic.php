@@ -25,7 +25,7 @@ $file = $_FILES['new_profile_pic'];
 // Configuration du dossier de destination et extensions autorisées
 $upload_web_dir = 'uploads/profile_pics/';
 $upload_fs_dir = __DIR__ . '/' . $upload_web_dir;
-$allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+$allowed_extensions = ['jpg', 'jpeg', 'png'];
 $max_size = 5 * 1024 * 1024; // 5 Mo
 
 // 1. Vérifications de base du fichier

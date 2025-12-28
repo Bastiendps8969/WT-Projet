@@ -4,8 +4,6 @@
  Rôle : Retourne les commentaires d'une story donnée en JSON.
  Entrées GET : `story_id` (UUID string) attendu.
  Sortie : JSON { success: bool, comments: [...] }
-
- Version simplifiée : suppression de tout ce qui concerne score/vote.
 */
 header('Content-Type: application/json');
 session_start();

@@ -61,6 +61,14 @@ try {
         throw new Exception('Title and content are mandatory.');
     }
 
+    if (!preg_match('/^[A-Za-z0-9\-\/?.,!\s]{1,50}$/', $title)) {
+        throw new Exception('Invalid title format.');
+    }
+
+    if (!preg_match('/^[A-Za-z0-9\-\/?.,!\s]{1,5000}$/', $content)) {
+        throw new Exception('Invalid content format.');
+    }
+
     // Exiger au moins un tag pour toute story publiée
     if (empty($selectedTags) || !is_array($selectedTags)) {
         throw new Exception('At least one tag is required.');
@@ -71,10 +79,10 @@ try {
         $fileTmpPath = $_FILES['pictureStory']['tmp_name'];
         $fileName = basename($_FILES['pictureStory']['name']);
         $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-        $allowedFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
+        $allowedFileTypes = ['jpg', 'jpeg', 'png'];
         
         if (!in_array($fileExtension, $allowedFileTypes)) {
-            throw new Exception('Unsupported file format. (JPG, PNG, GIF)');
+            throw new Exception('Unsupported file format. (JPG, PNG)');
         }
 
         // Renommer le fichier pour éviter les conflits (utilisation d'un ID unique)

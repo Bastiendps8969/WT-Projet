@@ -18,6 +18,18 @@ try {
         throw new Exception('All fields are required.');
     }
 
+    if (!preg_match('/^[A-Za-z0-9 ]{1,20}$/', $username)) {
+        throw new Exception('Invalid username format.');
+    }
+
+    if (!preg_match('/^[A-Za-z0-9.@]{1,30}$/', $email)) {
+        throw new Exception('Invalid email format.');
+    }
+
+    if (!preg_match('/^[A-Za-z0-9 !?,. ;: -_]{1,60}$/', $password)) {
+        throw new Exception('Invalid password format.');
+    }
+
     // Validation de la longueur du mot de passe
     if (strlen($password) < 8) {
         throw new Exception('Password must be at least 8 characters.');

@@ -3,13 +3,8 @@
     Fichier : get_stories.php
     Rôle : Web service retournant les stories en JSON,
                  avec auteurs, tags et métadonnées. Utilisé par la page principale et listes.
-    Remarque : garde la sortie strictement JSON pour éviter d'endommager le parseur côté client.
 */
 // get_stories.php - Récupère toutes les stories avec leurs auteurs et tags
-
-// *******************************************************
-// TRÈS IMPORTANT : Assurer que seule une réponse JSON est envoyée
-// *******************************************************
 header('Content-Type: application/json');
 
 // Inclut le fichier de configuration pour la connexion à la base de données

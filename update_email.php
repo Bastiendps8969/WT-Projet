@@ -23,8 +23,13 @@ $new_email = trim($_POST['new_email']);
 $user_id = $_SESSION['user_uuid']; // Correction ici
 
 // 1. Validation de l'adresse email
-if (empty($new_email) || !filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(['success' => false, 'message' => 'The provided email address is invalid.']);
+if (empty($new_email)) {
+    echo json_encode(['success' => false, 'message' => 'Email cannot be empty.']);
+    exit;
+}
+
+if (!preg_match('/^[A-Za-z0-9.@]{1,30}$/', $new_email)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid email format.']);
     exit;
 }
 

@@ -28,6 +28,11 @@ if (strlen($new_password) < 8) {
     echo json_encode(['success' => false, 'message' => 'New password must be at least 8 characters.']);
     exit;
 }
+
+if (!preg_match('/^[A-Za-z0-9 !?,. ;: -_]{1,60}$/', $new_password)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid password format.']);
+    exit;
+}
 if ($current_password === $new_password) {
     echo json_encode(['success' => false, 'message' => 'New password must be different from the current password.']);
     exit;

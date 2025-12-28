@@ -3,7 +3,6 @@
 <!--
     Fichier : register.html
     Rôle : Formulaire d'inscription front-end. Envoie les données au service `register.php`.
-    Commentaires : Les indications utilisateur sont en anglais ; commentaires explicatifs en français.
 -->
 <head>
     <meta charset="UTF-8">
@@ -61,7 +60,6 @@
                 $btn.prop('disabled', true).text('Registering...');
                 $messageArea.hide().removeClass('alert-success alert-danger').empty();
 
-                // (No password confirmation required)
                 
                 $.ajax({
                     url: 'register.php', // Cible le WebService PHP

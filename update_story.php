@@ -30,6 +30,16 @@ if ($title === '' || $content === '') {
     exit;
 }
 
+if (!preg_match('/^[A-Za-z0-9\-\/?.,!\s]{1,50}$/', $title)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid title format.']);
+    exit;
+}
+
+if (!preg_match('/^[A-Za-z0-9\-\/?.,!\s]{1,5000}$/', $content)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid content format.']);
+    exit;
+}
+
 try {
     $pdo = getDBConnection();
 
